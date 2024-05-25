@@ -1,4 +1,4 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 // Define the type for a single note
@@ -23,6 +23,12 @@ export type NoteToEdit = {
 };
 
 export type SortOption = "dateAdded" | "lastUpdated";
+
+const DEFAULT_DISPLAY_SETTINGS = {
+  showDeleted: false,
+  showCompleted: true,
+  sortBy: "dateAdded" as SortOption,
+};
 
 // Create a context for the notes
 export const NotesContext = createContext<{
@@ -51,35 +57,25 @@ export const NotesContext = createContext<{
   editNote: () => {},
   updateNote: () => {},
   addNote: () => {},
-  displaySettings: {
-    showDeleted: false,
-    showCompleted: true,
-    sortBy: "dateAdded",
-  },
+  displaySettings: DEFAULT_DISPLAY_SETTINGS,
   searchQuery: "",
   setSearchQuery: () => {},
   setDisplaySettings: () => {},
 });
 
+const NOTES_STORAGE = "myNotes";
+const DISPLAY_STORAGE = "myDisplaySettings";
+
 // NotesProvider component to wrap app
 export function NotesProvider({ children }: { children: React.ReactNode }) {
-  const [notes, setNotes] = useState<Note[]>([
-    {
-      id: "abc",
-      title: "my first note",
-      content: "sample content",
-      isCompleted: false,
-      isDeleted: false,
-      lastUpdated: Date.now(),
-      dateAdded: Date.now(),
-    },
-  ]);
+  const [notes, setNotes] = useState<Note[]>(
+    JSON.parse(localStorage.getItem(NOTES_STORAGE) ?? "[]")
+  );
   const [noteToEdit, setNoteToEdit] = useState<NoteToEdit>();
 
-  const [displaySettings, setDisplaySettings] = useState({
-    showDeleted: false,
-    showCompleted: true,
-    sortBy: "dateAdded" as SortOption,
+  const [displaySettings, setDisplaySettings] = useState(() => {
+    const s = localStorage.getItem(DISPLAY_STORAGE);
+    return s ? JSON.parse(s) : DEFAULT_DISPLAY_SETTINGS;
   });
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -127,6 +123,17 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       ...prevNotes,
     ]);
   };
+
+  // write changes to local storage
+  useEffect(() => {
+    localStorage.setItem(DISPLAY_STORAGE, JSON.stringify(displaySettings));
+    console.log("saved settings");
+  }, [displaySettings]);
+
+  useEffect(() => {
+    localStorage.setItem(NOTES_STORAGE, JSON.stringify(notes));
+    console.log("saved notes");
+  }, [notes]);
 
   return (
     <NotesContext.Provider
