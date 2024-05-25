@@ -4,26 +4,12 @@ import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import MenuIcon from "@mui/icons-material/Menu";
 import { Divider } from "@mui/material";
+import { useNotes } from "../hooks/useNotes";
+import { SortOption } from "../hooks/notesContext";
 
-export type SortOption = "dateAdded" | "lastUpdated";
+const OptionsMenu = () => {
+  const { displaySettings, setDisplaySettings } = useNotes();
 
-interface OptionsMenuProps {
-  showCompleted: boolean;
-  showDeleted: boolean;
-  onShowCompleted: () => void;
-  onShowDeleted: () => void;
-  sortBy: SortOption;
-  setSortBy: (newValue: SortOption) => void;
-}
-
-const OptionsMenu: React.FC<OptionsMenuProps> = ({
-  showCompleted,
-  showDeleted,
-  onShowCompleted,
-  onShowDeleted,
-  sortBy,
-  setSortBy,
-}) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
   const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -32,6 +18,16 @@ const OptionsMenu: React.FC<OptionsMenuProps> = ({
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const toggleShowDeleted = () => {
+    setDisplaySettings((p) => ({ ...p, showDeleted: !p.showDeleted }));
+  };
+  const toggleShowCompleted = () => {
+    setDisplaySettings((p) => ({ ...p, showCompleted: !p.showCompleted }));
+  };
+  const changeSortBy = (val: SortOption) => {
+    setDisplaySettings((p) => ({ ...p, sortBy: val }));
   };
 
   return (
@@ -62,18 +58,20 @@ const OptionsMenu: React.FC<OptionsMenuProps> = ({
         <MenuItem
           onClick={() => {
             handleClose();
-            setSortBy("dateAdded");
+            changeSortBy("dateAdded");
           }}
         >
-          {sortBy === "dateAdded" && <>&#10003; </>}Show Newest First
+          {displaySettings.sortBy === "dateAdded" && <>&#10003; </>}Show Newest
+          First
         </MenuItem>
         <MenuItem
           onClick={() => {
             handleClose();
-            setSortBy("lastUpdated");
+            changeSortBy("lastUpdated");
           }}
         >
-          {sortBy === "lastUpdated" && <>&#10003; </>}Last Updated First
+          {displaySettings.sortBy === "lastUpdated" && <>&#10003; </>}Last
+          Updated First
         </MenuItem>
 
         <Divider />
@@ -82,18 +80,18 @@ const OptionsMenu: React.FC<OptionsMenuProps> = ({
         <MenuItem
           onClick={() => {
             handleClose();
-            onShowCompleted();
+            toggleShowCompleted();
           }}
         >
-          {showCompleted ? "Hide" : "Show"} Completed
+          {displaySettings.showCompleted ? "Hide" : "Show"} Completed
         </MenuItem>
         <MenuItem
           onClick={() => {
             handleClose();
-            onShowDeleted();
+            toggleShowDeleted();
           }}
         >
-          {showDeleted ? "Hide" : "Show"} Deleted
+          {displaySettings.showDeleted ? "Hide" : "Show"} Deleted
         </MenuItem>
       </Menu>
     </div>

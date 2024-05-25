@@ -3,16 +3,11 @@ import TextField from "@mui/material/TextField";
 import IconButton from "@mui/material/IconButton";
 import ClearIcon from "@mui/icons-material/Clear";
 import { Box } from "@mui/material";
+import { useNotes } from "../hooks/useNotes";
 
-interface SearchBoxProps {
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-}
+const SearchBox = () => {
+  const { searchQuery, setSearchQuery } = useNotes();
 
-const SearchBox: React.FC<SearchBoxProps> = ({
-  searchQuery,
-  setSearchQuery,
-}) => {
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
   };

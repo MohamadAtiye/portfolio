@@ -22,6 +22,8 @@ export type NoteToEdit = {
   isDeleted: boolean;
 };
 
+export type SortOption = "dateAdded" | "lastUpdated";
+
 // Create a context for the notes
 export const NotesContext = createContext<{
   notes: Note[];
@@ -29,12 +31,34 @@ export const NotesContext = createContext<{
   editNote: (note: NoteToEdit | undefined) => void;
   updateNote: (note: NoteToEdit) => void;
   addNote: (note: NoteToEdit) => void;
+  displaySettings: {
+    showDeleted: boolean;
+    showCompleted: boolean;
+    sortBy: SortOption;
+  };
+  searchQuery: string;
+  setSearchQuery: (s: string) => void;
+  setDisplaySettings: React.Dispatch<
+    React.SetStateAction<{
+      showDeleted: boolean;
+      showCompleted: boolean;
+      sortBy: SortOption;
+    }>
+  >;
 }>({
   notes: [],
   noteToEdit: undefined,
   editNote: () => {},
   updateNote: () => {},
   addNote: () => {},
+  displaySettings: {
+    showDeleted: false,
+    showCompleted: true,
+    sortBy: "dateAdded",
+  },
+  searchQuery: "",
+  setSearchQuery: () => {},
+  setDisplaySettings: () => {},
 });
 
 // NotesProvider component to wrap app
@@ -50,8 +74,14 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       dateAdded: Date.now(),
     },
   ]);
-
   const [noteToEdit, setNoteToEdit] = useState<NoteToEdit>();
+
+  const [displaySettings, setDisplaySettings] = useState({
+    showDeleted: false,
+    showCompleted: true,
+    sortBy: "dateAdded" as SortOption,
+  });
+  const [searchQuery, setSearchQuery] = useState("");
 
   // mark note to be edited. new notes id=undefined
   const editNote = (note: NoteToEdit | undefined) => {
@@ -106,6 +136,10 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         editNote,
         updateNote,
         addNote,
+        displaySettings,
+        searchQuery,
+        setSearchQuery,
+        setDisplaySettings,
       }}
     >
       {children}
