@@ -12,9 +12,8 @@ export default function ListContainer({ children }: ListContainerProps) {
       sx={{
         flex: 1,
         position: "relative",
-        padding: "8px",
+        padding: "8px 0",
         paddingTop: 0,
-        // backgroundColor: Colors.componentGray,
         bgcolor: "#f5f5f5",
         overflowY: "scroll",
         scrollbarWidth: "thin",
@@ -22,6 +21,7 @@ export default function ListContainer({ children }: ListContainerProps) {
         display: "flex",
         flexDirection: "column",
         gap: 1,
+        backgroundColor: "rgba(255,255,255,0.5);",
       }}
     >
       {children}

@@ -93,7 +93,7 @@ function App() {
             zIndex: 1,
             padding: "12px 32px",
             color: "white",
-            backgroundColor: "gray",
+            backgroundColor: "black",
           }}
         >
           <Typography>Active</Typography>
@@ -118,7 +118,7 @@ function App() {
                 zIndex: 1,
                 padding: "12px 32px",
                 color: "white",
-                backgroundColor: "gray",
+                backgroundColor: "black",
               }}
             >
               <Typography>Completed</Typography>

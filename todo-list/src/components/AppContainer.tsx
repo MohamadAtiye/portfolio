@@ -1,5 +1,6 @@
 import { Box, Container, useMediaQuery, useTheme } from "@mui/material";
 import { ReactNode } from "react";
+import GLBackground from "./GLBackground";
 
 interface AppContainerProps {
   children: ReactNode;
@@ -14,7 +15,7 @@ export default function AppContainer({ children }: AppContainerProps) {
         height: "100vh",
         width: "100vw",
         margin: 0,
-        bgcolor: "#e0e0e0",
+        // bgcolor: "#e0e0e0",
       }}
     >
       <Container
@@ -22,13 +23,22 @@ export default function AppContainer({ children }: AppContainerProps) {
         sx={{
           height: "100%",
           overflow: "hidden",
-          display: "flex",
-          flexDirection: "column",
-          padding: isMobile ? 1 : "32px 0",
-          paddingBottom: isMobile ? 1 : "20vh",
         }}
       >
-        {children}
+        <GLBackground />
+        <Box
+          sx={{
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            padding: isMobile ? 1 : "32px 0",
+            paddingBottom: isMobile ? 1 : "20vh",
+            gap: 1,
+            zIndex: 2,
+          }}
+        >
+          {children}
+        </Box>
       </Container>
     </Box>
   );

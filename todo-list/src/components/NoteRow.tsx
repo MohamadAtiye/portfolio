@@ -32,8 +32,11 @@ export default function NoteRow({ note }: NoteRowProps) {
         sx={{
           display: "flex",
           gap: 1,
-          backgroundColor: note.isDeleted ? "lightGray" : undefined,
+          backgroundColor: note.isDeleted
+            ? "rgba(255,255,255,0.5);"
+            : "rgba(255,255,255,0.8);",
           cursor: "pointer",
+          margin: "0 8px",
           transition: "background-color 0.3s",
           "&:hover": {
             backgroundColor: !note.isDeleted ? "lightBlue" : undefined,

@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { defaultNoteToEdit, useNotes } from "../hooks/useNotes";
-import { Box, IconButton, InputAdornment, TextField } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  InputAdornment,
+  Paper,
+  TextField,
+} from "@mui/material";
 import CheckIcon from "@mui/icons-material/Check";
 import AddIcon from "@mui/icons-material/Add";
 import { NoteToEdit } from "../hooks/notesContext";
@@ -31,65 +37,60 @@ export default function AddTaskBox() {
   };
 
   return (
-    <Box
-      component={"form"}
-      onSubmit={handleSubmit}
-      mt={1}
+    <Paper
       sx={{
-        borderRadius: "5px",
         overflow: "hidden",
+        backgroundColor: "rgba(255,255,255,0.5);",
       }}
-      id={"add-note-bar"}
     >
-      <TextField
-        sx={{
-          bgcolor: "white",
-        }}
-        fullWidth
-        placeholder="I want to..."
-        value={formData.title}
-        onChange={handleChange}
-        inputRef={inputReference}
-        autoComplete="off"
-        required
-        InputProps={{
-          endAdornment: (
-            <>
-              <InputAdornment position="end">
-                <IconButton
-                  size="large"
-                  onClick={() => {
-                    editNote(formData);
-                    setFormData({ ...defaultNoteToEdit });
-                  }}
-                  edge="end"
-                >
-                  <AddIcon />
-                </IconButton>
-              </InputAdornment>
-              {formData.title.trim().length > 0 && (
+      <Box component={"form"} onSubmit={handleSubmit} id={"add-note-bar"}>
+        <TextField
+          fullWidth
+          placeholder="I want to..."
+          value={formData.title}
+          onChange={handleChange}
+          inputRef={inputReference}
+          autoComplete="off"
+          required
+          InputProps={{
+            endAdornment: (
+              <>
                 <InputAdornment position="end">
                   <IconButton
                     size="large"
-                    onClick={() =>
-                      setFormData((f) => ({
-                        ...f,
-                        title: f.title.trim(),
-                        content: f.content.trim(),
-                      }))
-                    }
-                    type="submit"
-                    form="add-note-bar"
+                    onClick={() => {
+                      editNote(formData);
+                      setFormData({ ...defaultNoteToEdit });
+                    }}
                     edge="end"
                   >
-                    <CheckIcon />
+                    <AddIcon />
                   </IconButton>
                 </InputAdornment>
-              )}
-            </>
-          ),
-        }}
-      />
-    </Box>
+                {formData.title.trim().length > 0 && (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="large"
+                      onClick={() =>
+                        setFormData((f) => ({
+                          ...f,
+                          title: f.title.trim(),
+                          content: f.content.trim(),
+                        }))
+                      }
+                      type="submit"
+                      form="add-note-bar"
+                      edge="end"
+                    >
+                      <CheckIcon />
+                    </IconButton>
+                  </InputAdornment>
+                )}
+              </>
+            ),
+          }}
+        />
+      </Box>
+    </Paper>
   );
 }

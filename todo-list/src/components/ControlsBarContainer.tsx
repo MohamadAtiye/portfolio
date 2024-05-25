@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Paper } from "@mui/material";
 import { ReactNode } from "react";
 
 interface ControlsBarContainerProps {
@@ -8,16 +8,13 @@ export default function ControlsBarContainer({
   children,
 }: ControlsBarContainerProps) {
   return (
-    <Box
+    <Paper
       sx={{
         display: "flex",
-        justifyContent: "space-between",
-        padding: "8px 0",
-        gap: 1,
-        flexWrap: "wrap",
+        backgroundColor: "rgba(255,255,255,0.5);",
       }}
     >
       {children}
-    </Box>
+    </Paper>
   );
 }

@@ -22,14 +22,15 @@ const SearchBox: React.FC<SearchBoxProps> = ({
   };
 
   return (
-    <Box sx={{ flex: 1, borderRadius: "5px", overflow: "hidden" }}>
+    <Box sx={{ flex: 1, borderRadius: "5px" }}>
       <TextField
         fullWidth
         size="small"
-        sx={{ minWidth: "180px", bgcolor: "white" }}
+        sx={{ minWidth: "180px" }}
         placeholder="Search"
         value={searchQuery}
         onChange={handleSearchChange}
+        autoComplete="off"
         InputProps={{
           endAdornment: searchQuery.length ? (
             <IconButton onClick={handleClearSearch} edge="end">
