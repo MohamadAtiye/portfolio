@@ -37,7 +37,7 @@ export const NotesContext = createContext<{
   addNote: () => {},
 });
 
-// NotesProvider component to wrap your app with
+// NotesProvider component to wrap app
 export function NotesProvider({ children }: { children: React.ReactNode }) {
   const [notes, setNotes] = useState<Note[]>([
     {

@@ -1,7 +1,6 @@
 import { useContext } from "react";
 import { NoteToEdit, NotesContext } from "./notesContext";
 
-// Custom hook to access the notes context
 export function useNotes() {
   return useContext(NotesContext);
 }

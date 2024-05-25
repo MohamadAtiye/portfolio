@@ -15,7 +15,6 @@ export default function AppContainer({ children }: AppContainerProps) {
         height: "100vh",
         width: "100vw",
         margin: 0,
-        // bgcolor: "#e0e0e0",
       }}
     >
       <Container
@@ -34,7 +33,6 @@ export default function AppContainer({ children }: AppContainerProps) {
             padding: isMobile ? 1 : "32px 0",
             paddingBottom: isMobile ? 1 : "20vh",
             gap: 1,
-            zIndex: 2,
           }}
         >
           {children}

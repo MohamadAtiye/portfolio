@@ -12,14 +12,6 @@ import { Note } from "./hooks/notesContext";
 import { Paper, Typography } from "@mui/material";
 import NoteDialogEditor from "./components/NoteDialogEditor";
 
-//DONE // TODO search
-//DONE // TODO sort
-
-// TODO dueDate
-// TODO add notes history
-// TODO subTasks
-// TODO catergories
-
 const sortNotes = (list: Note[], sortBy: SortOption) => {
   return list.sort((a, b) => {
     switch (sortBy) {
