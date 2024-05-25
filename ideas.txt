@@ -1,0 +1,4 @@
+todo list + sync
+voice recorder + transcribe
+camera app with filters and AI
+a soduko game
