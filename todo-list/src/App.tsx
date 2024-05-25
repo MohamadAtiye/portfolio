@@ -48,7 +48,9 @@ function App() {
     if (!showDeleted) temp = temp.filter((t) => !t.isDeleted);
 
     if (searchQuery.length)
-      temp = temp.filter((t) => t.title.includes(searchQuery));
+      temp = temp.filter((t) =>
+        t.title.toLowerCase().includes(searchQuery.toLowerCase())
+      );
 
     return sortNotes(temp, sortBy);
   }, [notes, searchQuery, showDeleted, sortBy]);
