@@ -3,6 +3,32 @@ import { useEffect, useRef, useState } from "react";
 import DropDownPopper from "./DropDownPopper";
 import SettingsIcon from "@mui/icons-material/Settings";
 
+const hexToRgb = (hex: string): [number, number, number] => {
+  // Remove the hash symbol if it exists
+  const trimmedHex = hex.replace(/^#/, "");
+
+  // Parse r, g, b values
+  const bigint = parseInt(trimmedHex, 16);
+  const r = (bigint >> 16) & 255;
+  const g = (bigint >> 8) & 255;
+  const b = bigint & 255;
+
+  return [r, g, b];
+};
+
+function normRgbToHex([r, g, b]: number[]) {
+  // Convert normalized RGB values to 0-255 range
+  r = Math.round(r * 255);
+  g = Math.round(g * 255);
+  b = Math.round(b * 255);
+
+  // Convert each component to hexadecimal and concatenate them
+  const hex = ((r << 16) | (g << 8) | b).toString(16).padStart(6, "0");
+
+  // Prepend '#' to the hexadecimal value
+  return `#${hex}`;
+}
+
 function createShader(
   gl: WebGLRenderingContext,
   type: number,
@@ -56,7 +82,7 @@ const fragmentShaderSource = `
   precision mediump float;
   uniform float u_time;
   uniform vec2 u_resolution;
-  uniform vec3 u_color;
+  uniform vec3 u_blobColor;
   uniform float u_blobSize;
   uniform vec3 u_bgColor;
 
@@ -68,18 +94,6 @@ const fragmentShaderSource = `
     st.x *= u_resolution.x / u_resolution.y;
 
     vec2 blobs[NUM_BLOBS];
-    // for (int i = 0; i < NUM_BLOBS; i++) {
-    //   // float dist = length(st - blobs[i]);
-    //   // value += u_blobSize / dist;
-
-    //   float step = 2.0 / float(NUM_BLOBS);
-    //   float istep = -1.0 +  float(i) * step;
-    //   // vec2 center =  vec2(-1.0 + (step * float(i)) , 0.0);
-    //   vec2 center =  vec2(istep , 0.0);
-    //   float rotateRadius = 0.3;
-
-    //   blobs[i] = center + vec2(sin(u_time), cos(u_time)) * rotateRadius;
-    // }
     blobs[0] = vec2(0.5, 0.5) + vec2(sin(u_time), cos(u_time)) * 0.2;
     blobs[1] = vec2(-0.5, -0.5) + vec2(sin(u_time * 1.2), cos(u_time * 1.2)) * 0.3;
     blobs[2] = vec2(0.3, -0.5) + vec2(sin(u_time * 0.8), cos(u_time * 0.8)) * 0.25;
@@ -96,40 +110,24 @@ const fragmentShaderSource = `
 
     value = smoothstep(0.8, 1.0, value);
     
-    vec3 color = u_color * value;
+    vec3 color = u_blobColor * value;
 
     // Combine the background color with the blob value
-    vec3 finalColor = u_color * value + u_bgColor;
+    // vec3 finalColor = u_blobColor * value + u_bgColor;
+
+    // mix(x,y,a)
+    // x Specify the start of the range in which to interpolate.
+    // y Specify the end of the range in which to interpolate.
+    // a Specify the value to use to interpolate between x and y.
+
+    vec3 finalColor = mix(u_bgColor, u_blobColor * value, step(0.9, value));
+    // vec3 finalColor = mix(vec3(0,0,0), u_blobColor * value, u_blobColor * value);
+
 
     // render final color
     gl_FragColor = vec4(finalColor, 1.0);
   }
 `;
-
-const hexToRgb = (hex: string): [number, number, number] => {
-  // Remove the hash symbol if it exists
-  const trimmedHex = hex.replace(/^#/, "");
-
-  // Parse r, g, b values
-  const bigint = parseInt(trimmedHex, 16);
-  const r = (bigint >> 16) & 255;
-  const g = (bigint >> 8) & 255;
-  const b = bigint & 255;
-
-  return [r, g, b];
-};
-function normRgbToHex([r, g, b]: number[]) {
-  // Convert normalized RGB values to 0-255 range
-  r = Math.round(r * 255);
-  g = Math.round(g * 255);
-  b = Math.round(b * 255);
-
-  // Convert each component to hexadecimal and concatenate them
-  const hex = ((r << 16) | (g << 8) | b).toString(16).padStart(6, "0");
-
-  // Prepend '#' to the hexadecimal value
-  return `#${hex}`;
-}
 
 class Renderer {
   static canvas: HTMLCanvasElement;
@@ -144,7 +142,7 @@ class Renderer {
   static uniformLocations = {
     u_resolution: null as WebGLUniformLocation | null,
     u_time: null as WebGLUniformLocation | null,
-    u_color: null as WebGLUniformLocation | null,
+    u_blobColor: null as WebGLUniformLocation | null,
     u_blobSize: null as WebGLUniformLocation | null,
     u_bgColor: null as WebGLUniformLocation | null,
   };
@@ -152,6 +150,8 @@ class Renderer {
   static uniformValues = {
     uv_bgColor: [0.6, 0.8, 1.0],
     uv_blobSize: 0.1,
+    // uv_blobColor: [-0.4, -0.6, -0.5],
+    uv_blobColor: [0.2, 0.2, 0.6],
   };
 
   static init(canvas: HTMLCanvasElement) {
@@ -203,7 +203,7 @@ class Renderer {
     Renderer.uniformLocations = {
       u_resolution: gl.getUniformLocation(Renderer.program, "u_resolution"),
       u_time: gl.getUniformLocation(Renderer.program, "u_time"),
-      u_color: gl.getUniformLocation(Renderer.program, "u_color"),
+      u_blobColor: gl.getUniformLocation(Renderer.program, "u_blobColor"),
       u_blobSize: gl.getUniformLocation(Renderer.program, "u_blobSize"),
       u_bgColor: gl.getUniformLocation(Renderer.program, "u_bgColor"),
     };
@@ -242,14 +242,19 @@ class Renderer {
       0
     );
 
-    const { u_resolution, u_time, u_color, u_blobSize, u_bgColor } =
+    const { u_resolution, u_time, u_blobColor, u_blobSize, u_bgColor } =
       Renderer.uniformLocations;
-    const { uv_bgColor, uv_blobSize } = Renderer.uniformValues;
+    const { uv_bgColor, uv_blobSize, uv_blobColor } = Renderer.uniformValues;
 
     // pass uniform (full render variables)
     gl.uniform2f(u_resolution, gl.canvas.width, gl.canvas.height);
     gl.uniform1f(u_time, time);
-    gl.uniform3f(u_color, -0.4, -0.6, -0.5); // 0.8, 0.2, 0.2 Change the color here (R, G, B)
+    gl.uniform3f(
+      u_blobColor,
+      uv_blobColor[0],
+      uv_blobColor[1],
+      uv_blobColor[2]
+    ); // 0.8, 0.2, 0.2 Change the color here (R, G, B)
     gl.uniform1f(u_blobSize, uv_blobSize);
     gl.uniform3f(u_bgColor, uv_bgColor[0], uv_bgColor[1], uv_bgColor[2]);
 
@@ -290,9 +295,11 @@ export default function GLBackground() {
   const [blobSize, setBlobSize] = useState<number>(
     Renderer.uniformValues.uv_blobSize
   );
-  const [color, setColor] = useState<string>(
-    normRgbToHex(Renderer.uniformValues.uv_bgColor)
-  );
+
+  const [colors, setColors] = useState({
+    uv_bgColor: normRgbToHex(Renderer.uniformValues.uv_bgColor),
+    uv_blobColor: normRgbToHex(Renderer.uniformValues.uv_blobColor),
+  });
 
   const handleSizeChange = (_event: Event, newValue: number | number[]) => {
     if (!Array.isArray(newValue)) {
@@ -301,11 +308,14 @@ export default function GLBackground() {
     }
   };
 
-  const handleColorChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setColor(event.target.value);
+  const handleColorChange = (field: string, color: string) => {
+    setColors((p) => ({ ...p, [field]: color }));
 
-    const normalized = hexToRgb(event.target.value).map((value) => value / 255);
-    Renderer.uniformValues.uv_bgColor = normalized;
+    const normalized = hexToRgb(color).map((value) => value / 255);
+
+    if (field === "uv_bgColor") Renderer.uniformValues.uv_bgColor = normalized;
+    if (field === "uv_blobColor")
+      Renderer.uniformValues.uv_blobColor = normalized;
   };
 
   return (
@@ -323,10 +333,21 @@ export default function GLBackground() {
             max={0.2}
             step={0.01}
           />
-          <Typography variant="caption" gutterBottom>
-            BgColor {color}
+          <Typography variant="caption">BgColor {colors.uv_bgColor}</Typography>
+          <input
+            type="color"
+            value={colors.uv_bgColor}
+            onChange={(e) => handleColorChange("uv_bgColor", e.target.value)}
+          />
+          <br />
+          <Typography variant="caption">
+            BlobColor {colors.uv_blobColor}
           </Typography>
-          <input type="color" value={color} onChange={handleColorChange} />
+          <input
+            type="color"
+            value={colors.uv_blobColor}
+            onChange={(e) => handleColorChange("uv_blobColor", e.target.value)}
+          />
         </DropDownPopper>
       </Box>
       <canvas
