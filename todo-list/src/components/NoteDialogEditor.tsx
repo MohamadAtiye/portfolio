@@ -71,9 +71,9 @@ const NoteDialogEditor = () => {
       onClose={onClose}
       fullWidth
       maxWidth="sm"
-      sx={{
-        "& .MuiPaper-root": { backgroundColor: "rgb(180,180,180)" },
-      }}
+      // sx={{
+      //   "& .MuiPaper-root": { backgroundColor: "rgb(180,180,180)" },
+      // }}
     >
       <DialogTitle>Enter Details {status}</DialogTitle>
       <DialogContent>

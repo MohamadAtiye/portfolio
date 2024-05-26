@@ -8,7 +8,7 @@ export default function Header() {
         textAlign: "center",
         fontSize: "2rem",
         padding: "1rem 0",
-        textShadow: "2px 2px 1px white",
+        // textShadow: "2px 2px 1px white",
       }}
     >
       TODO LIST

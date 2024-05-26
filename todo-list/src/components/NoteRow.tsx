@@ -33,8 +33,8 @@ export default function NoteRow({ note }: NoteRowProps) {
           display: "flex",
           gap: 1,
           backgroundColor: note.isDeleted
-            ? "rgba(255,255,255,0.5);"
-            : "rgba(255,255,255,0.8);",
+            ? "rgba(0,0,0,0.2);"
+            : "rgba(255,255,255,0.2);",
           cursor: "pointer",
           margin: "0 8px",
           transition: "background-color 0.3s",

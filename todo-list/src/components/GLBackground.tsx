@@ -51,13 +51,14 @@ const vertexShaderSource = `
 `;
 
 const fragmentShaderSource = `
+
   precision mediump float;
   uniform float u_time;
   uniform vec2 u_resolution;
   uniform vec3 u_color;
   uniform float u_blobSize;
 
-  #define NUM_BLOBS 5
+  #define NUM_BLOBS 6
 
   void main() {
     vec2 st = gl_FragCoord.xy / u_resolution;
@@ -70,6 +71,8 @@ const fragmentShaderSource = `
     blobs[2] = vec2(0.3, -0.5) + vec2(sin(u_time * 0.8), cos(u_time * 0.8)) * 0.25;
     blobs[3] = vec2(-0.3, 0.3) + vec2(sin(u_time * 1.5), cos(u_time * 1.5)) * 0.15;
     blobs[4] = vec2(0.0, 0.0) + vec2(sin(u_time * 2.0), cos(u_time * 2.0)) * 0.35;
+    blobs[5] = vec2(0.8, -0.8) + vec2(sin(u_time * 1.0), cos(u_time * 1.0)) * 0.35;
+
 
     float value = 0.0;
     for (int i = 0; i < NUM_BLOBS; i++) {
@@ -78,9 +81,16 @@ const fragmentShaderSource = `
     }
 
     value = smoothstep(0.8, 1.0, value);
-
+    
     vec3 color = u_color * value;
-    gl_FragColor = vec4(color, 1.0);
+
+    // Set the background color to light blue
+    vec3 backgroundColor = vec3(0.6, 0.8, 1.0);
+    // Combine the background color with the blob value
+    vec3 finalColor = u_color * value + backgroundColor;
+
+    // render final color
+    gl_FragColor = vec4(finalColor, 1.0);
   }
 `;
 
@@ -131,9 +141,10 @@ export default function GLBackground() {
     gl.bufferData(gl.ARRAY_BUFFER, positions, gl.STATIC_DRAW);
 
     const render = (time: number) => {
-      time *= 0.001;
+      time *= 0.001; // change the movement speed here
 
       gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+
       gl.clear(gl.COLOR_BUFFER_BIT);
 
       gl.useProgram(program);
@@ -155,8 +166,8 @@ export default function GLBackground() {
         gl.canvas.height
       );
       gl.uniform1f(timeUniformLocation, time);
-      gl.uniform3f(colorUniformLocation, 0.8, 0.2, 0.3); // 0.8, 0.2, 0.2 Change the color here (R, G, B)
-      gl.uniform1f(blobSizeUniformLocation, 0.2); // 0.3 Change the size of the blobs here
+      gl.uniform3f(colorUniformLocation, -0.4, -0.6, -0.5); // 0.8, 0.2, 0.2 Change the color here (R, G, B)
+      gl.uniform1f(blobSizeUniformLocation, 0.1); // 0.3 Change the size of the blobs here
 
       gl.drawArrays(gl.TRIANGLES, 0, 6);
 
