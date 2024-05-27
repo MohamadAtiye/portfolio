@@ -265,7 +265,7 @@ class Renderer {
   }
 }
 
-export default function GLBackground() {
+export default function GLBackgroundBlob() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // prepare GL and program
