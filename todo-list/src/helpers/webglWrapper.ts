@@ -18,11 +18,19 @@ function createShader(
   return shader;
 }
 
-function createProgram(
+export function createProgram(
   gl: WebGLRenderingContext,
-  vertexShader: WebGLShader,
-  fragmentShader: WebGLShader
+  vertexShaderSource: string,
+  fragmentShaderSource: string
 ): WebGLProgram | null {
+  const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+  const fragmentShader = createShader(
+    gl,
+    gl.FRAGMENT_SHADER,
+    fragmentShaderSource
+  );
+  if (!vertexShader || !fragmentShader) return null;
+
   const program = gl.createProgram();
   if (!program) {
     console.error("Error creating program.");
@@ -65,15 +73,7 @@ export class Renderer {
     Renderer.canvas = canvas;
     Renderer.gl = gl;
 
-    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
-    const fragmentShader = createShader(
-      gl,
-      gl.FRAGMENT_SHADER,
-      fragmentShaderSource
-    );
-    if (!vertexShader || !fragmentShader) return;
-
-    const program = createProgram(gl, vertexShader, fragmentShader);
+    const program = createProgram(gl, vertexShaderSource, fragmentShaderSource);
     if (!program) return;
 
     Renderer.program = program;
