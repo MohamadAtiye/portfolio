@@ -73,6 +73,12 @@ export class Renderer {
     Renderer.canvas = canvas;
     Renderer.gl = gl;
 
+    // FOR ALPHA CHANNEL transparency
+    // Enable blending
+    gl.enable(gl.BLEND);
+    // Set the blending function
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
     const program = createProgram(gl, vertexShaderSource, fragmentShaderSource);
     if (!program) return;
 

@@ -1,6 +1,6 @@
 import { Box, Container, useMediaQuery, useTheme } from "@mui/material";
 import { ReactNode } from "react";
-// import GLBackgroundBlob from "./GLBackgroundBlob";
+import GLBackgroundBlob from "./GLBackgroundBlob";
 import GLBackgroundSnow from "./GLBackgroundSnow";
 
 interface AppContainerProps {
@@ -25,10 +25,8 @@ export default function AppContainer({ children }: AppContainerProps) {
           overflow: "hidden",
         }}
       >
-        {/* <GLBackground /> */}
         <GLBackgroundSnow />
-        {/* <GLBackground2 /> */}
-        {/* <RainWebGL /> */}
+        {/* <GLBackgroundBlob /> */}
         <Box
           sx={{
             height: "100%",

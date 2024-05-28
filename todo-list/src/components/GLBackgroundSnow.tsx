@@ -48,10 +48,17 @@ const fragmentShaderSource = `
             // Draw the sun as a solid color circle
             vec2 coord = gl_PointCoord - vec2(0.5);
             float dist = length(coord);
-            if (dist > 0.5) {
+
+            // Apply a smooth gradient to create a blurry effect
+            float blurRadius = 0.5; // The radius of the blur effect
+            float edgeSoftness = 0.1; // The softness of the blur edge
+    
+            float alpha = smoothstep(blurRadius, blurRadius - edgeSoftness, dist);
+            
+            if (dist > blurRadius) {
                 discard; // Outside the circle
             }
-            gl_FragColor = v_color;
+            gl_FragColor = vec4(v_color.rgb, v_color.a * alpha);
         } else {
             // Draw the snowflakes using the texture
             vec2 uv = gl_PointCoord;
@@ -72,24 +79,91 @@ const backgroundVertexShaderSource = `
         gl_Position = vec4(a_position, 0, 1);
     }
 `;
+
 const backgroundFragmentShaderSource = `
-    precision mediump float;
-    uniform vec2 u_sunPosition;
-    uniform vec2 u_resolution;
-    varying vec2 v_position;
+precision mediump float;
+uniform vec2 u_sunPosition;
+uniform vec2 u_resolution;
+varying vec2 v_position;
 
-    void main() {
-        vec2 position = (v_position + 1.0) / 2.0 * u_resolution;
-        float sunHeight = u_sunPosition.y / u_resolution.y;
-        
-        // vec3 skyColorDay = vec3(135.0 / 255.0, 206.0 / 255.0, 235.0 / 255.0);
-        vec3 skyColorDay = vec3(0.0 / 255.0, 170.0 / 255.0, 240.0 / 255.0);
+void main() {
+    float u_gradientBlendStart = 0.3;
+    float u_gradientBlendEnd = 0.5;
 
-        vec3 skyColorNight = vec3(32.0 / 255.0, 41.0 / 255.0, 61.0 / 255.0);
-        vec3 color = mix(skyColorDay, skyColorNight, sunHeight);
-        gl_FragColor = vec4(color, 1.0);
-    }
+
+    vec2 position = (v_position + 1.0) / 2.0 * u_resolution;
+    float sunHeight = 1.0 - u_sunPosition.y / u_resolution.y;
+    sunHeight = sunHeight * step(0.0, sunHeight); // Ensure sunHeight is non-negative
+
+    // Define colors
+    vec3 colorBottom = vec3(255.0 / 255.0, 94.0 / 255.0, 77.0 / 255.0); // Red gradient bottom color
+    vec3 colorTop = vec3(32.0 / 255.0, 41.0 / 255.0, 61.0 / 255.0); // Navy blue top color
+    vec3 colorDay = vec3(0.0 / 255.0, 170.0 / 255.0, 240.0 / 255.0); // Blue sky during the day
+
+    // // Calculate the distance from the sun position
+    // vec2 coord = (v_position + 1.0)  - u_sunPosition;
+    // float dist = length(coord) / length(u_resolution);
+
+    // // Calculate the gradient based on the distance
+    // float gradientFactor = 1.0 - dist;
+
+    // Calculate the gradient based on the vertical position
+    float gradientFactor = 1.0 - sunHeight;
+
+    // Interpolate between the red gradient (sunrise/sunset) and the navy blue (night)
+    vec3 gradientColor = mix(colorBottom, colorTop, gradientFactor);
+
+    // Mix between the gradient color and the daytime color based on sun height with adjustable blending range
+    vec3 finalColor = mix(gradientColor, colorDay, smoothstep(u_gradientBlendStart, u_gradientBlendEnd, sunHeight));
+
+    gl_FragColor = vec4(finalColor, 1.0);
+}
 `;
+// const backgroundFragmentShaderSource = `
+// precision mediump float;
+// uniform vec2 u_sunPosition;
+// uniform vec2 u_resolution;
+// varying vec2 v_position;
+
+// void main() {
+//     vec2 position = (v_position + 1.0) / 2.0 * u_resolution;
+//     float sunHeight =  1.0 - u_sunPosition.y / u_resolution.y;
+
+//     // Define colors
+//     vec3 colorBottom = vec3(255.0 / 255.0, 94.0 / 255.0, 77.0 / 255.0); // Red gradient bottom color
+//     vec3 colorTop = vec3(32.0 / 255.0, 41.0 / 255.0, 61.0 / 255.0); // Navy blue top color
+//     vec3 colorDay = vec3(0.0 / 255.0, 170.0 / 255.0, 240.0 / 255.0); // Blue sky during the day
+
+//     // Calculate the gradient based on the vertical position
+//     float gradientFactor =  position.y / u_resolution.y;
+
+//     // Interpolate between the red gradient (sunrise/sunset) and the navy blue (night)
+//     vec3 gradientColor = mix(colorBottom, colorTop, gradientFactor);
+
+//     // Mix between the gradient color and the daytime color based on sun height
+//     vec3 finalColor = mix(gradientColor, colorDay, smoothstep(0.3, 0.7, sunHeight));
+
+//     gl_FragColor = vec4(finalColor, 1.0);
+// }
+// `;
+// const backgroundFragmentShaderSource = `
+//     precision mediump float;
+//     uniform vec2 u_sunPosition;
+//     uniform vec2 u_resolution;
+//     varying vec2 v_position;
+
+//     void main() {
+//         vec2 position = (v_position + 1.0) / 2.0 * u_resolution;
+//         float sunHeight = u_sunPosition.y / u_resolution.y;
+
+//         // vec3 skyColorDay = vec3(135.0 / 255.0, 206.0 / 255.0, 235.0 / 255.0);
+//         vec3 skyColorDay = vec3(0.0 / 255.0, 170.0 / 255.0, 240.0 / 255.0);
+
+//         vec3 skyColorNight = vec3(32.0 / 255.0, 41.0 / 255.0, 61.0 / 255.0);
+//         vec3 color = mix(skyColorDay, skyColorNight, sunHeight);
+//         gl_FragColor = vec4(color, 1.0);
+//     }
+// `;
 
 const start = (
   canvas: HTMLCanvasElement,
@@ -215,7 +289,8 @@ const start = (
 
   function updateSunPosition(time: number) {
     const nightTime = 0.2;
-    const speed = 0.00005;
+    const speed = 0.0001;
+    // const speed = 0.00005;
     const t = (time * speed) % 1;
     const angle = t * (1 + nightTime) * Math.PI;
     positions[snowflakeCount * 2] =
@@ -240,32 +315,28 @@ const start = (
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     // Render background
-    if (sunPosition[1] < canvas.height) {
-      gl.useProgram(backgroundProgram);
-      gl.uniform2f(
-        bgResolutionUniformLocation,
-        gl.canvas.width,
-        gl.canvas.height
-      );
-      gl.uniform2f(
-        bgSunPositionUniformLocation,
-        sunPosition[0],
-        sunPosition[1]
-      );
+    // if (sunPosition[1] < canvas.height) {
+    gl.useProgram(backgroundProgram);
+    gl.uniform2f(
+      bgResolutionUniformLocation,
+      gl.canvas.width,
+      gl.canvas.height
+    );
+    gl.uniform2f(bgSunPositionUniformLocation, sunPosition[0], sunPosition[1]);
 
-      gl.bindBuffer(gl.ARRAY_BUFFER, bgPositionBuffer);
-      gl.enableVertexAttribArray(bgPositionAttributeLocation);
-      gl.vertexAttribPointer(
-        bgPositionAttributeLocation,
-        2,
-        gl.FLOAT,
-        false,
-        0,
-        0
-      );
+    gl.bindBuffer(gl.ARRAY_BUFFER, bgPositionBuffer);
+    gl.enableVertexAttribArray(bgPositionAttributeLocation);
+    gl.vertexAttribPointer(
+      bgPositionAttributeLocation,
+      2,
+      gl.FLOAT,
+      false,
+      0,
+      0
+    );
 
-      gl.drawArrays(gl.TRIANGLES, 0, 6);
-    }
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    // }
 
     // Render snowflakes and sun
     gl.useProgram(program);
