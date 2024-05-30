@@ -87,11 +87,9 @@ uniform vec2 u_resolution;
 varying vec2 v_position;
 
 void main() {
-    float u_gradientBlendStart = 0.3;
+    float u_gradientBlendStart = 0.1;
     float u_gradientBlendEnd = 0.5;
 
-
-    vec2 position = (v_position + 1.0) / 2.0 * u_resolution;
     float sunHeight = 1.0 - u_sunPosition.y / u_resolution.y;
     sunHeight = sunHeight * step(0.0, sunHeight); // Ensure sunHeight is non-negative
 
@@ -100,17 +98,10 @@ void main() {
     vec3 colorTop = vec3(32.0 / 255.0, 41.0 / 255.0, 61.0 / 255.0); // Navy blue top color
     vec3 colorDay = vec3(0.0 / 255.0, 170.0 / 255.0, 240.0 / 255.0); // Blue sky during the day
 
-    // // Calculate the distance from the sun position
-    // vec2 coord = (v_position + 1.0)  - u_sunPosition;
-    // float dist = length(coord) / length(u_resolution);
-
-    // // Calculate the gradient based on the distance
-    // float gradientFactor = 1.0 - dist;
-
     // Calculate the gradient based on the vertical position
     float gradientFactor = 1.0 - sunHeight;
 
-    // Interpolate between the red gradient (sunrise/sunset) and the navy blue (night)
+    // // Interpolate between the red gradient (sunrise/sunset) and the navy blue (night)
     vec3 gradientColor = mix(colorBottom, colorTop, gradientFactor);
 
     // Mix between the gradient color and the daytime color based on sun height with adjustable blending range
@@ -119,51 +110,6 @@ void main() {
     gl_FragColor = vec4(finalColor, 1.0);
 }
 `;
-// const backgroundFragmentShaderSource = `
-// precision mediump float;
-// uniform vec2 u_sunPosition;
-// uniform vec2 u_resolution;
-// varying vec2 v_position;
-
-// void main() {
-//     vec2 position = (v_position + 1.0) / 2.0 * u_resolution;
-//     float sunHeight =  1.0 - u_sunPosition.y / u_resolution.y;
-
-//     // Define colors
-//     vec3 colorBottom = vec3(255.0 / 255.0, 94.0 / 255.0, 77.0 / 255.0); // Red gradient bottom color
-//     vec3 colorTop = vec3(32.0 / 255.0, 41.0 / 255.0, 61.0 / 255.0); // Navy blue top color
-//     vec3 colorDay = vec3(0.0 / 255.0, 170.0 / 255.0, 240.0 / 255.0); // Blue sky during the day
-
-//     // Calculate the gradient based on the vertical position
-//     float gradientFactor =  position.y / u_resolution.y;
-
-//     // Interpolate between the red gradient (sunrise/sunset) and the navy blue (night)
-//     vec3 gradientColor = mix(colorBottom, colorTop, gradientFactor);
-
-//     // Mix between the gradient color and the daytime color based on sun height
-//     vec3 finalColor = mix(gradientColor, colorDay, smoothstep(0.3, 0.7, sunHeight));
-
-//     gl_FragColor = vec4(finalColor, 1.0);
-// }
-// `;
-// const backgroundFragmentShaderSource = `
-//     precision mediump float;
-//     uniform vec2 u_sunPosition;
-//     uniform vec2 u_resolution;
-//     varying vec2 v_position;
-
-//     void main() {
-//         vec2 position = (v_position + 1.0) / 2.0 * u_resolution;
-//         float sunHeight = u_sunPosition.y / u_resolution.y;
-
-//         // vec3 skyColorDay = vec3(135.0 / 255.0, 206.0 / 255.0, 235.0 / 255.0);
-//         vec3 skyColorDay = vec3(0.0 / 255.0, 170.0 / 255.0, 240.0 / 255.0);
-
-//         vec3 skyColorNight = vec3(32.0 / 255.0, 41.0 / 255.0, 61.0 / 255.0);
-//         vec3 color = mix(skyColorDay, skyColorNight, sunHeight);
-//         gl_FragColor = vec4(color, 1.0);
-//     }
-// `;
 
 const start = (
   canvas: HTMLCanvasElement,
