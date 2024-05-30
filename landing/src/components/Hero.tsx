@@ -54,67 +54,70 @@ function calcDuration() {
 function calcDelay() {
   return rand(0, 5, "s", true);
 }
+function calcMr() {
+  return rand(10, 80);
+}
 
 const disapearingText = [
   {
     text: "Typescript",
     delay: calcDelay(),
     duration: calcDuration(),
-    mr: rand(10, 50),
+    mr: calcMr(),
   },
   {
     text: "React",
     delay: calcDelay(),
     duration: calcDuration(),
-    mr: rand(10, 50),
+    mr: calcMr(),
   },
   {
     text: "WebRTC",
     delay: calcDelay(),
     duration: calcDuration(),
-    mr: rand(10, 50),
+    mr: calcMr(),
   },
   {
     text: "WebGL",
     delay: calcDelay(),
     duration: calcDuration(),
-    mr: rand(10, 50),
+    mr: calcMr(),
   },
   {
     text: "Nodejs",
     delay: calcDelay(),
     duration: calcDuration(),
-    mr: rand(10, 50),
+    mr: calcMr(),
   },
   {
     text: "WebSockets",
     delay: calcDelay(),
     duration: calcDuration(),
-    mr: rand(10, 50),
+    mr: calcMr(),
   },
   {
     text: "MySql",
     delay: calcDelay(),
     duration: calcDuration(),
-    mr: rand(10, 50),
+    mr: calcMr(),
   },
   {
     text: "Reddis",
     delay: calcDelay(),
     duration: calcDuration(),
-    mr: rand(10, 50),
+    mr: calcMr(),
   },
   {
     text: "Python",
     delay: calcDelay(),
     duration: calcDuration(),
-    mr: rand(10, 50),
+    mr: calcMr(),
   },
   {
     text: "ML & AI",
     delay: calcDelay(),
     duration: calcDuration(),
-    mr: rand(10, 50),
+    mr: calcMr(),
   },
 ];
 
@@ -125,7 +128,7 @@ export default function Hero() {
       sx={{
         margin: 0,
         padding: 0,
-        height: { xs: "250px", md: "600px" },
+        height: { xs: "300px", md: "600px" },
         background: "linear-gradient(to right,white, white, black,black)",
       }}
       elevation={3}
@@ -151,7 +154,7 @@ export default function Hero() {
               key={t.text}
               sx={{
                 marginRight: { xs: `${t.mr}px`, md: `${Number(t.mr) * 4}px` },
-                lineHeight: { xs: 0.8, md: 1.5 },
+                lineHeight: { xs: 1, md: 1.5 },
               }}
               delay={`${t.delay}`}
               duration={`${t.duration}`}
