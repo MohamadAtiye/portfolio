@@ -1,0 +1,177 @@
+import * as React from "react";
+import AppBar from "@mui/material/AppBar";
+import Box from "@mui/material/Box";
+import Toolbar from "@mui/material/Toolbar";
+import IconButton from "@mui/material/IconButton";
+import Typography from "@mui/material/Typography";
+import Menu from "@mui/material/Menu";
+import MenuIcon from "@mui/icons-material/Menu";
+import Container from "@mui/material/Container";
+import Button from "@mui/material/Button";
+import Tooltip from "@mui/material/Tooltip";
+import MenuItem from "@mui/material/MenuItem";
+import GitHubIcon from "@mui/icons-material/GitHub";
+import LinkedInIcon from "@mui/icons-material/LinkedIn";
+import { Divider } from "@mui/material";
+
+const pages = ["About me", "Projects", "Contact"];
+
+export default function Header() {
+  const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
+    null
+  );
+
+  const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorElNav(event.currentTarget);
+  };
+
+  const handleCloseNavMenu = () => {
+    setAnchorElNav(null);
+  };
+
+  return (
+    <AppBar position="static" sx={{ bgcolor: "black" }}>
+      <Container maxWidth="xl">
+        <Toolbar disableGutters>
+          {/* LOGO */}
+          <Typography
+            variant="h5"
+            noWrap
+            component="a"
+            href="/"
+            sx={{
+              mr: 2,
+              // display: { xs: "none", md: "flex" },
+              fontFamily: "monospace",
+              fontWeight: 700,
+              letterSpacing: ".3rem",
+              color: "inherit",
+              textDecoration: "none",
+            }}
+          >
+            M Atiye
+          </Typography>
+
+          {/* MOBILE NAV MENU */}
+          <Box
+            sx={{
+              justifyContent: "flex-end",
+              flexGrow: 1,
+              display: { xs: "flex", md: "none" },
+            }}
+          >
+            <IconButton
+              size="large"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={handleOpenNavMenu}
+              color="inherit"
+            >
+              <MenuIcon />
+            </IconButton>
+            <Menu
+              id="menu-appbar"
+              anchorEl={anchorElNav}
+              anchorOrigin={{
+                vertical: "bottom",
+                horizontal: "left",
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: "top",
+                horizontal: "left",
+              }}
+              open={Boolean(anchorElNav)}
+              onClose={handleCloseNavMenu}
+              sx={{
+                display: { xs: "block", md: "none" },
+              }}
+              slotProps={{
+                paper: {
+                  style: {
+                    width: "100%", // Set the menu width to 100%
+                  },
+                },
+              }}
+            >
+              {/* PAGES */}
+              {pages.map((page) => (
+                <MenuItem key={page} onClick={handleCloseNavMenu}>
+                  <Typography width={"100%"} textAlign="center" fontSize={18}>
+                    {page}
+                  </Typography>
+                </MenuItem>
+              ))}
+
+              <Divider />
+
+              {/* ICON */}
+              <Box sx={{ display: "flex", justifyContent: "space-evenly" }}>
+                <Tooltip title="Check Github">
+                  <IconButton
+                    href="https://github.com"
+                    target="_blank"
+                    onClick={handleCloseNavMenu}
+                  >
+                    <GitHubIcon fontSize="large" />
+                  </IconButton>
+                </Tooltip>
+                <Tooltip title="Check LinkedIn">
+                  <IconButton
+                    href="https://linkedin.com"
+                    target="_blank"
+                    onClick={handleCloseNavMenu}
+                  >
+                    <LinkedInIcon fontSize="large" />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            </Menu>
+          </Box>
+
+          {/* NORMAL NAV MENU */}
+          <Box
+            sx={{
+              flexGrow: 1,
+              justifyContent: "center",
+              display: { xs: "none", md: "flex" },
+            }}
+          >
+            {/* PAGES */}
+            {pages.map((page) => (
+              <Button
+                key={page}
+                onClick={handleCloseNavMenu}
+                sx={{ my: 2, color: "white", display: "block",mx:2 }}
+              >
+                {page}
+              </Button>
+            ))}
+          </Box>
+
+          {/* NORMAL ICONS */}
+          <Box sx={{ flexGrow: 0, display: { xs: "none", md: "flex" } }}>
+            <Tooltip title="Check Github">
+              <IconButton
+                size="large"
+                sx={{ color: "white" }}
+                href="https://github.com"
+              >
+                <GitHubIcon fontSize="large" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Check LinkedIn">
+              <IconButton
+                size="large"
+                sx={{ color: "white" }}
+                href="https://linkedin.com"
+              >
+                <LinkedInIcon fontSize="large" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Toolbar>
+      </Container>
+    </AppBar>
+  );
+}
