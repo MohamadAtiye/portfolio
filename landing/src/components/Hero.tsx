@@ -48,78 +48,25 @@ function rand(
   return `${n}${unit}`;
 }
 
-function calcDuration() {
-  return rand(2, 4, "s", true);
-}
-function calcDelay() {
-  return rand(0, 5, "s", true);
-}
-function calcMr() {
-  return rand(10, 80);
-}
-
-const disapearingText = [
-  {
-    text: "Typescript",
-    delay: calcDelay(),
-    duration: calcDuration(),
-    mr: calcMr(),
-  },
-  {
-    text: "React",
-    delay: calcDelay(),
-    duration: calcDuration(),
-    mr: calcMr(),
-  },
-  {
-    text: "WebRTC",
-    delay: calcDelay(),
-    duration: calcDuration(),
-    mr: calcMr(),
-  },
-  {
-    text: "WebGL",
-    delay: calcDelay(),
-    duration: calcDuration(),
-    mr: calcMr(),
-  },
-  {
-    text: "Nodejs",
-    delay: calcDelay(),
-    duration: calcDuration(),
-    mr: calcMr(),
-  },
-  {
-    text: "WebSockets",
-    delay: calcDelay(),
-    duration: calcDuration(),
-    mr: calcMr(),
-  },
-  {
-    text: "MySql",
-    delay: calcDelay(),
-    duration: calcDuration(),
-    mr: calcMr(),
-  },
-  {
-    text: "Reddis",
-    delay: calcDelay(),
-    duration: calcDuration(),
-    mr: calcMr(),
-  },
-  {
-    text: "Python",
-    delay: calcDelay(),
-    duration: calcDuration(),
-    mr: calcMr(),
-  },
-  {
-    text: "ML & AI",
-    delay: calcDelay(),
-    duration: calcDuration(),
-    mr: calcMr(),
-  },
+const rightSideText = [
+  "Typescript",
+  "React",
+  "WebRTC",
+  "WebGL",
+  "Nodejs",
+  "WebSockets",
+  "MySql",
+  "MongoDB",
+  "Reddis",
+  "Python",
+  "ML & AI",
 ];
+const disapearingText = rightSideText.map((t) => ({
+  text: t,
+  delay: rand(0, 5, "s", true),
+  duration: rand(2, 4, "s", true),
+  mr: rand(10, 80),
+}));
 
 export default function Hero() {
   console.log(disapearingText);
