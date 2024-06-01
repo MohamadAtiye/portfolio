@@ -118,7 +118,7 @@ export default function Header() {
                 </Tooltip>
                 <Tooltip title="Check LinkedIn">
                   <IconButton
-                    href="https://linkedin.com"
+                    href="https://www.linkedin.com/in/mohamadatiye/"
                     target="_blank"
                     onClick={handleCloseNavMenu}
                   >
@@ -142,7 +142,7 @@ export default function Header() {
               <Button
                 key={page}
                 onClick={handleCloseNavMenu}
-                sx={{ my: 2, color: "white", display: "block",mx:2 }}
+                sx={{ my: 2, color: "white", display: "block", mx: 2 }}
               >
                 {page}
               </Button>
@@ -156,6 +156,7 @@ export default function Header() {
                 size="large"
                 sx={{ color: "white" }}
                 href="https://github.com"
+                target="_blank"
               >
                 <GitHubIcon fontSize="large" />
               </IconButton>
@@ -164,7 +165,8 @@ export default function Header() {
               <IconButton
                 size="large"
                 sx={{ color: "white" }}
-                href="https://linkedin.com"
+                href="https://www.linkedin.com/in/mohamadatiye/"
+                target="_blank"
               >
                 <LinkedInIcon fontSize="large" />
               </IconButton>
