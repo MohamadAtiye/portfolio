@@ -13,6 +13,7 @@ import MenuItem from "@mui/material/MenuItem";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import { Divider } from "@mui/material";
+import { STRINGS, URL_DASHBOARD } from "../assets/strings";
 
 const pages = ["About me", "Projects", "Contact"];
 
@@ -94,6 +95,17 @@ export default function Header() {
                 },
               }}
             >
+              <MenuItem
+                onClick={() => {
+                  window.open(URL_DASHBOARD, "_blank");
+                  handleCloseNavMenu();
+                }}
+              >
+                <Typography width={"100%"} textAlign="center" fontSize={18}>
+                  Dashboard
+                </Typography>
+              </MenuItem>
+
               {/* PAGES */}
               {pages.map((page) => (
                 <MenuItem key={page} onClick={handleCloseNavMenu}>
@@ -109,7 +121,7 @@ export default function Header() {
               <Box sx={{ display: "flex", justifyContent: "space-evenly" }}>
                 <Tooltip title="Check Github">
                   <IconButton
-                    href="https://github.com"
+                    href={STRINGS.social.github}
                     target="_blank"
                     onClick={handleCloseNavMenu}
                   >
@@ -118,7 +130,7 @@ export default function Header() {
                 </Tooltip>
                 <Tooltip title="Check LinkedIn">
                   <IconButton
-                    href="https://www.linkedin.com/in/mohamadatiye/"
+                    href={STRINGS.social.linkedin}
                     target="_blank"
                     onClick={handleCloseNavMenu}
                   >
@@ -137,6 +149,15 @@ export default function Header() {
               display: { xs: "none", md: "flex" },
             }}
           >
+            <Button
+              onClick={handleCloseNavMenu}
+              sx={{ my: 2, color: "white", display: "block", mx: 2 }}
+              href={URL_DASHBOARD}
+              target="_blank"
+            >
+              Dashboard
+            </Button>
+
             {/* PAGES */}
             {pages.map((page) => (
               <Button
@@ -155,7 +176,7 @@ export default function Header() {
               <IconButton
                 size="large"
                 sx={{ color: "white" }}
-                href="https://github.com"
+                href={STRINGS.social.github}
                 target="_blank"
               >
                 <GitHubIcon fontSize="large" />
@@ -165,7 +186,7 @@ export default function Header() {
               <IconButton
                 size="large"
                 sx={{ color: "white" }}
-                href="https://www.linkedin.com/in/mohamadatiye/"
+                href={STRINGS.social.linkedin}
                 target="_blank"
               >
                 <LinkedInIcon fontSize="large" />

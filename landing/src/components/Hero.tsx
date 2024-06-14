@@ -80,7 +80,7 @@ export default function Hero() {
       }}
       elevation={3}
     >
-      <Container sx={{ height: "100%", position: "relative" }}>
+      <Container sx={{ height: "100%", position: "relative", padding: 0 }}>
         <img
           src="./Hero.jpg"
           style={{ height: "100%", width: "100%", objectFit: "contain" }}
