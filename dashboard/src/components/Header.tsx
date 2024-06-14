@@ -1,6 +1,7 @@
 import { Button, Container, Typography } from "@mui/material";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 import SettingsVoiceIcon from "@mui/icons-material/SettingsVoice";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { ReactNode } from "react";
 import { useDashboard } from "../hooks/useDashboard";
 
@@ -44,6 +45,7 @@ export default function Header() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        // bgcolor: "rgba(255,255,255,0.2)",
       }}
     >
       <HeaderIcon
@@ -51,6 +53,13 @@ export default function Header() {
         app={"todo"}
         onClick={() => {
           startApp("todo");
+        }}
+      />
+      <HeaderIcon
+        icon={<AccessTimeIcon fontSize="large" />}
+        app={"time"}
+        onClick={() => {
+          startApp("time");
         }}
       />
       <HeaderIcon

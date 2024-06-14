@@ -9,8 +9,11 @@ export default function PagePaper({ children }: PagePaperProps) {
     <Container
       component={Paper}
       sx={{
-        minHeight: "calc(100vh - 96px);",
         borderRadius: "20px",
+        flex: 1,
+        padding: 1,
+        overflow: "hidden",
+        bgcolor: "rgba(255,255,255,0.2)",
       }}
       elevation={3}
     >

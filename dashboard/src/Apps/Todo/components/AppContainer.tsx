@@ -1,6 +1,6 @@
 import { Box, Container, useMediaQuery, useTheme } from "@mui/material";
 import { ReactNode } from "react";
-// import GLBackgroundBlob from "./GLBackgroundBlob";
+import GLBackgroundBlob from "./GLBackgroundBlob";
 import GLBackgroundSnow from "./GLBackgroundSnow";
 
 interface AppContainerProps {
