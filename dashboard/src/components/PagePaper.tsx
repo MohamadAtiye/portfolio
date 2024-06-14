@@ -12,6 +12,7 @@ export default function PagePaper({ children }: PagePaperProps) {
         minHeight: "calc(100vh - 96px);",
         borderRadius: "20px",
       }}
+      elevation={3}
     >
       {children}
     </Container>

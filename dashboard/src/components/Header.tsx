@@ -2,12 +2,14 @@ import { Button, Container, Typography } from "@mui/material";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 import SettingsVoiceIcon from "@mui/icons-material/SettingsVoice";
 import { ReactNode } from "react";
+import { useDashboard } from "../hooks/useDashboard";
 
 interface HeaderIconProps {
   icon: ReactNode;
-  text: string;
+  app: string;
+  onClick: React.MouseEventHandler<HTMLButtonElement> | undefined;
 }
-function HeaderIcon({ icon, text }: HeaderIconProps) {
+function HeaderIcon({ icon, app, onClick }: HeaderIconProps) {
   return (
     <Button
       sx={{
@@ -15,15 +17,26 @@ function HeaderIcon({ icon, text }: HeaderIconProps) {
         flexDirection: "column",
         justifyContent: "center",
         width: "80px",
+        "& svg": {
+          transition: "transform 0.2s ease-in-out", // Add the transition
+        },
+        ":hover": {
+          "& svg": {
+            transform: "scale(1.1)", // Scale the SVG on hover
+          },
+        },
       }}
+      onClick={onClick}
     >
       {icon}
-      <Typography fontSize={10}>{text}</Typography>
+      <Typography fontSize={10}>{app}</Typography>
     </Button>
   );
 }
 
 export default function Header() {
+  const { startApp } = useDashboard();
+
   return (
     <Container
       sx={{
@@ -35,11 +48,17 @@ export default function Header() {
     >
       <HeaderIcon
         icon={<PlaylistAddCheckIcon fontSize="large" />}
-        text={"ToDo"}
+        app={"todo"}
+        onClick={() => {
+          startApp("todo");
+        }}
       />
       <HeaderIcon
         icon={<SettingsVoiceIcon fontSize="large" />}
-        text={"Recorder"}
+        app={"recorder"}
+        onClick={() => {
+          startApp("recorder");
+        }}
       />
     </Container>
   );
