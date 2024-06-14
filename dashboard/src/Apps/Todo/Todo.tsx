@@ -1,7 +1,6 @@
 import { Box } from "@mui/material";
 import AddTaskBox from "./components/AddTaskBox";
 import ControlsBarContainer from "./components/ControlsBarContainer";
-import Header from "./components/Header";
 import NoteDialogEditor from "./components/NoteDialogEditor";
 import NotesList from "./components/NotesList";
 import OptionsMenu from "./components/OptionsMenu";
@@ -19,8 +18,6 @@ export default function Todo() {
           gap: 1,
         }}
       >
-        <Header />
-
         <ControlsBarContainer>
           <SearchBox />
           <OptionsMenu />

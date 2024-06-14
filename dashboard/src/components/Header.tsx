@@ -4,10 +4,11 @@ import SettingsVoiceIcon from "@mui/icons-material/SettingsVoice";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { ReactNode } from "react";
 import { useDashboard } from "../hooks/useDashboard";
+import { APPS, APP_NAMES } from "../assets/constants";
 
 interface HeaderIconProps {
   icon: ReactNode;
-  app: string;
+  app: APP_NAMES;
   onClick: React.MouseEventHandler<HTMLButtonElement> | undefined;
 }
 function HeaderIcon({ icon, app, onClick }: HeaderIconProps) {
@@ -30,7 +31,7 @@ function HeaderIcon({ icon, app, onClick }: HeaderIconProps) {
       onClick={onClick}
     >
       {icon}
-      <Typography fontSize={10}>{app}</Typography>
+      <Typography fontSize={10}>{APPS[app].text}</Typography>
     </Button>
   );
 }
@@ -50,23 +51,23 @@ export default function Header() {
     >
       <HeaderIcon
         icon={<PlaylistAddCheckIcon fontSize="large" />}
-        app={"todo"}
+        app={APP_NAMES.todo}
         onClick={() => {
-          startApp("todo");
+          startApp(APP_NAMES.todo);
         }}
       />
       <HeaderIcon
         icon={<AccessTimeIcon fontSize="large" />}
-        app={"time"}
+        app={APP_NAMES.time}
         onClick={() => {
-          startApp("time");
+          startApp(APP_NAMES.time);
         }}
       />
       <HeaderIcon
         icon={<SettingsVoiceIcon fontSize="large" />}
-        app={"recorder"}
+        app={APP_NAMES.recorder}
         onClick={() => {
-          startApp("recorder");
+          startApp(APP_NAMES.recorder);
         }}
       />
     </Container>

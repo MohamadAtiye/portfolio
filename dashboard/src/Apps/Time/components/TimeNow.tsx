@@ -109,7 +109,7 @@ export default function TimeNow() {
           flexWrap: "wrap",
         }}
       >
-        <Clock value={timeNow} />
+        <Clock renderNumbers size={"200px"} value={timeNow} />
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DateCalendar sx={{ margin: 0 }} />
         </LocalizationProvider>

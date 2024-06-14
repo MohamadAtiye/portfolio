@@ -1,7 +1,6 @@
 import { Box } from "@mui/material";
-import TimeNow from "./components/TimeNow";
 
-export default function Time() {
+export default function Recorder() {
   return (
     <Box
       sx={{
@@ -11,7 +10,7 @@ export default function Time() {
         gap: 1,
       }}
     >
-      <TimeNow />
+      my recorder app
     </Box>
   );
 }

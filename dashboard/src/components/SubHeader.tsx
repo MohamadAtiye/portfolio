@@ -1,16 +1,19 @@
 import { Typography } from "@mui/material";
 
-export default function Header() {
+interface SubHeaderProps {
+  text: string;
+}
+export default function SubHeader({ text }: SubHeaderProps) {
   return (
     <Typography
-      variant="h1"
+      variant="h2"
       style={{
         textAlign: "center",
         fontSize: "1.5rem",
         padding: "0.5rem 0",
       }}
     >
-      TODO LIST
+      {text}
     </Typography>
   );
 }

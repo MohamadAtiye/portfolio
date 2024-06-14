@@ -6,6 +6,8 @@ import Todo from "./Apps/Todo/Todo";
 import GLBackgroundSnow from "./components/GLBackgroundSnow";
 import Time from "./Apps/Time/Time";
 import GLBackgroundBlob from "./components/GLBackgroundBlob";
+import Recorder from "./Apps/Recorder/Recorder";
+import { APPS } from "./assets/constants";
 
 function App() {
   const { activeApp } = useDashboard();
@@ -29,9 +31,10 @@ function App() {
       {bg === 1 && <GLBackgroundBlob />}
 
       <Header />
-      <PagePaper>
+      <PagePaper subheader={APPS[activeApp]?.text}>
         {activeApp === "todo" && <Todo />}
         {activeApp === "time" && <Time />}
+        {activeApp === "recorder" && <Recorder />}
       </PagePaper>
     </Box>
   );
