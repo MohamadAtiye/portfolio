@@ -22,7 +22,7 @@ function HeaderIcon({ icon, app, onClick, isScale }: HeaderIconProps) {
         justifyContent: "center",
         width: "80px",
         transform: isScale ? "scale(1.5)" : "scale(1)", // Scale the SVG on hover
-        transition: "transform 0.2s ease-in-out",
+        transition: "transform 0.5s ease-in-out",
         "& svg": {
           transition: "transform 0.2s ease-in-out", // Add the transition
         },
@@ -31,6 +31,7 @@ function HeaderIcon({ icon, app, onClick, isScale }: HeaderIconProps) {
             transform: "scale(1.2)", // Scale the SVG on hover
           },
         },
+        color: "black",
       }}
       onClick={onClick}
     >

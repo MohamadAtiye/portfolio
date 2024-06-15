@@ -1,10 +1,11 @@
-import { Box } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import IconButton from "@mui/material/IconButton";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import PauseIcon from "@mui/icons-material/Pause";
 import StopIcon from "@mui/icons-material/Stop";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import { v4 as uuidv4 } from "uuid";
 
 enum RecorderStatus {
   idle = "idle",
@@ -12,12 +13,15 @@ enum RecorderStatus {
   recording = "recording",
   stopped = "stopped",
 }
+type MediaRecording = {
+  audio: HTMLAudioElement;
+  id: string;
+};
 class AudioRecorder {
   private static recorderStatus = RecorderStatus.idle as RecorderStatus;
   private static setStatus = (status: RecorderStatus) => {
     AudioRecorder.recorderStatus = status;
-    AudioRecorder.onRecordingChange &&
-      AudioRecorder.onRecordingChange(AudioRecorder.recorderStatus);
+    AudioRecorder.triggerStatusCB();
   };
 
   private static canvas = null as HTMLCanvasElement | null;
@@ -28,11 +32,25 @@ class AudioRecorder {
   private static dataArray = null as Uint8Array | null;
   private static stream = null as MediaStream | null;
   private static mediaRecorder = null as MediaRecorder | null;
-  private static audioRecording = null as HTMLAudioElement | null;
+  private static mediaElementSourceNode =
+    null as MediaElementAudioSourceNode | null;
 
-  private static onRecordingChange = (v: RecorderStatus) => {
-    console.log(v);
+  private static audioRecordings = [] as MediaRecording[];
+
+  private static statusCB = (
+    status: RecorderStatus,
+    recordings: MediaRecording[]
+  ) => {
+    console.log({ status, recordings });
   };
+
+  private static triggerStatusCB() {
+    AudioRecorder.statusCB &&
+      AudioRecorder.statusCB(
+        AudioRecorder.recorderStatus,
+        AudioRecorder.audioRecordings
+      );
+  }
 
   private static handleEvents() {
     if (
@@ -47,7 +65,13 @@ class AudioRecorder {
           type: "audio/wav",
         });
         const audioUrl = URL.createObjectURL(audioBlob);
-        AudioRecorder.audioRecording = new Audio(audioUrl);
+        AudioRecorder.audioRecordings.push({
+          audio: new Audio(audioUrl),
+          id: uuidv4(),
+        });
+
+        AudioRecorder.setStatus(RecorderStatus.stopped);
+        // AudioRecorder.triggerStatusCB();
       };
 
       AudioRecorder.draw();
@@ -96,8 +120,10 @@ class AudioRecorder {
   };
 
   // exposed functions
-  static subscribeOnRecordingChange(cb: (v: RecorderStatus) => void) {
-    AudioRecorder.onRecordingChange = cb;
+  static subscribeOnStatusChange(
+    cb: (status: RecorderStatus, recordings: MediaRecording[]) => void
+  ) {
+    AudioRecorder.statusCB = cb;
   }
 
   static async startRecording() {
@@ -137,7 +163,7 @@ class AudioRecorder {
   static stopRecording = () => {
     if (AudioRecorder.mediaRecorder) {
       AudioRecorder.mediaRecorder.stop();
-      AudioRecorder.setStatus(RecorderStatus.stopped);
+      // AudioRecorder.setStatus(RecorderStatus.stopped);
     }
 
     cancelAnimationFrame(AudioRecorder.drawVisualizer);
@@ -158,7 +184,39 @@ class AudioRecorder {
   }
 
   static playLastRecording() {
-    AudioRecorder.audioRecording && AudioRecorder.audioRecording.play();
+    if (AudioRecorder.audioRecordings.length > 0) {
+      AudioRecorder.setupVisualizerForAudioElement();
+      AudioRecorder.audioRecordings[
+        AudioRecorder.audioRecordings.length - 1
+      ].audio.play();
+    }
+  }
+
+  private static setupVisualizerForAudioElement() {
+    if (AudioRecorder.audioRecordings.length > 0) {
+      if (!AudioRecorder.audioContext) {
+        AudioRecorder.audioContext = new AudioContext();
+      }
+
+      if (!AudioRecorder.mediaElementSourceNode) {
+        AudioRecorder.mediaElementSourceNode =
+          AudioRecorder.audioContext.createMediaElementSource(
+            AudioRecorder.audioRecordings[
+              AudioRecorder.audioRecordings.length - 1
+            ].audio
+          );
+        AudioRecorder.analyser = AudioRecorder.audioContext.createAnalyser();
+        AudioRecorder.analyser.fftSize = 2048;
+        AudioRecorder.dataArray = new Uint8Array(
+          AudioRecorder.analyser.fftSize
+        );
+
+        AudioRecorder.mediaElementSourceNode.connect(AudioRecorder.analyser);
+        AudioRecorder.analyser.connect(AudioRecorder.audioContext.destination);
+      }
+
+      AudioRecorder.draw();
+    }
   }
 }
 
@@ -170,13 +228,13 @@ function RecordButton({ onClick, isDisabled }: ButtonProps) {
   return (
     <IconButton
       sx={{
-        color: "red", // Set the color to red
+        color: "red",
         "&:hover": {
-          bgcolor: "rgba(255, 0, 0, 0.1)", // Optional: change background on hover
+          bgcolor: "rgba(255, 0, 0, 0.1)",
         },
       }}
       aria-label="record"
-      size="large" // Makes the button larger
+      size="large"
       onClick={onClick}
       disabled={isDisabled}
     >
@@ -188,13 +246,13 @@ function PauseButton({ onClick, isDisabled }: ButtonProps) {
   return (
     <IconButton
       sx={{
-        color: "black", // Set the color to black or any color you prefer
+        color: "black",
         "&:hover": {
-          bgcolor: "rgba(0, 0, 0, 0.1)", // Optional: change background on hover
+          bgcolor: "rgba(0, 0, 0, 0.1)",
         },
       }}
       aria-label="pause"
-      size="large" // Makes the button larger
+      size="large"
       onClick={onClick}
       disabled={isDisabled}
     >
@@ -206,13 +264,13 @@ function StopButton({ onClick, isDisabled }: ButtonProps) {
   return (
     <IconButton
       sx={{
-        color: "red", // Set the color to red
+        color: "red",
         "&:hover": {
-          bgcolor: "rgba(255, 0, 0, 0.1)", // Optional: change background on hover
+          bgcolor: "rgba(255, 0, 0, 0.1)",
         },
       }}
       aria-label="stop"
-      size="large" // Makes the button larger
+      size="large"
       onClick={onClick}
       disabled={isDisabled}
     >
@@ -224,13 +282,13 @@ function PlayButton({ onClick, isDisabled }: ButtonProps) {
   return (
     <IconButton
       sx={{
-        color: "black", // Set the color to black or any color you prefer
+        color: "black",
         "&:hover": {
-          bgcolor: "rgba(0, 0, 0, 0.1)", // Optional: change background on hover
+          bgcolor: "rgba(0, 0, 0, 0.1)",
         },
       }}
       aria-label="play"
-      size="large" // Makes the button larger
+      size="large"
       onClick={onClick}
       disabled={isDisabled}
     >
@@ -243,16 +301,20 @@ export default function Recorder() {
   const [recorderStatus, setRecorderStatus] = useState<RecorderStatus>(
     RecorderStatus.idle
   );
+  const [recordings, setRecordings] = useState<MediaRecording[]>([]);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   const isRecording = recorderStatus === RecorderStatus.recording;
 
   useEffect(() => {
     if (canvasRef.current) AudioRecorder.setVisualiserCanvas(canvasRef.current);
-    AudioRecorder.subscribeOnRecordingChange((v) => {
-      console.log("Recording ", v);
-      setRecorderStatus(v);
-    });
+    AudioRecorder.subscribeOnStatusChange(
+      (status: RecorderStatus, recordingsList: MediaRecording[]) => {
+        console.log({ status, recordingsList });
+        setRecorderStatus(status);
+        setRecordings(recordingsList);
+      }
+    );
   }, []);
 
   return (
@@ -291,7 +353,19 @@ export default function Recorder() {
         )}
       </Box>
 
-      <canvas ref={canvasRef} width="1000" height="300"></canvas>
+      <canvas
+        ref={canvasRef}
+        width="1000"
+        height="100"
+        style={{ background: "rgb(200, 200, 200)" }}
+      ></canvas>
+
+      <Typography>Recordings:</Typography>
+      {recordings.map((r, i) => (
+        <Box key={r.id}>
+          recording {i} {r.id}
+        </Box>
+      ))}
     </Box>
   );
 }
