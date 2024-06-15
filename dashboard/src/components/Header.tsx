@@ -1,8 +1,9 @@
-import { Button, Container, Typography } from "@mui/material";
+import { Button, Container, Paper, Typography } from "@mui/material";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
 import SettingsVoiceIcon from "@mui/icons-material/SettingsVoice";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import { ReactNode } from "react";
+import CloseIcon from "@mui/icons-material/Close";
+import { ReactNode, useState } from "react";
 import { useDashboard } from "../hooks/useDashboard";
 import { APPS, APP_NAMES } from "../assets/constants";
 
@@ -10,8 +11,9 @@ interface HeaderIconProps {
   icon: ReactNode;
   app: APP_NAMES;
   onClick: React.MouseEventHandler<HTMLButtonElement> | undefined;
+  isScale?: boolean;
 }
-function HeaderIcon({ icon, app, onClick }: HeaderIconProps) {
+function HeaderIcon({ icon, app, onClick, isScale }: HeaderIconProps) {
   return (
     <Button
       sx={{
@@ -19,12 +21,14 @@ function HeaderIcon({ icon, app, onClick }: HeaderIconProps) {
         flexDirection: "column",
         justifyContent: "center",
         width: "80px",
+        transform: isScale ? "scale(1.5)" : "scale(1)", // Scale the SVG on hover
+        transition: "transform 0.2s ease-in-out",
         "& svg": {
           transition: "transform 0.2s ease-in-out", // Add the transition
         },
         ":hover": {
           "& svg": {
-            transform: "scale(1.1)", // Scale the SVG on hover
+            transform: "scale(1.2)", // Scale the SVG on hover
           },
         },
       }}
@@ -37,39 +41,73 @@ function HeaderIcon({ icon, app, onClick }: HeaderIconProps) {
 }
 
 export default function Header() {
-  const { startApp } = useDashboard();
+  const { activeApp, startApp } = useDashboard();
+  const [transitionTo, setTrasitionTo] = useState<APP_NAMES>(activeApp);
+
+  const handleClickApp = (v: APP_NAMES) => {
+    if (v === APP_NAMES.null) {
+      startApp(v);
+    } else if (activeApp !== APP_NAMES.null) {
+      startApp(v);
+    } else {
+      setTimeout(() => {
+        startApp(v);
+      }, 500);
+    }
+    setTrasitionTo(v);
+  };
+
+  const isScale = transitionTo === APP_NAMES.null;
 
   return (
     <Container
       sx={{
-        height: "80x",
+        height: isScale ? "50vh" : "80px",
+        transition: "height 0.5s ease-out",
+
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        // bgcolor: "rgba(255,255,255,0.2)",
+        bgcolor: "rgba(255,255,255,0.2)",
+        borderRadius: "0 0 20px 20px",
+        gap: isScale ? 4 : 1,
       }}
+      component={Paper}
     >
       <HeaderIcon
         icon={<PlaylistAddCheckIcon fontSize="large" />}
         app={APP_NAMES.todo}
         onClick={() => {
-          startApp(APP_NAMES.todo);
+          handleClickApp(APP_NAMES.todo);
         }}
+        isScale={isScale}
       />
       <HeaderIcon
         icon={<AccessTimeIcon fontSize="large" />}
         app={APP_NAMES.time}
         onClick={() => {
-          startApp(APP_NAMES.time);
+          handleClickApp(APP_NAMES.time);
         }}
+        isScale={isScale}
       />
       <HeaderIcon
         icon={<SettingsVoiceIcon fontSize="large" />}
         app={APP_NAMES.recorder}
         onClick={() => {
-          startApp(APP_NAMES.recorder);
+          handleClickApp(APP_NAMES.recorder);
         }}
+        isScale={isScale}
       />
+
+      {activeApp !== APP_NAMES.null && (
+        <HeaderIcon
+          icon={<CloseIcon fontSize="large" />}
+          app={APP_NAMES.null}
+          onClick={() => {
+            handleClickApp(APP_NAMES.null);
+          }}
+        />
+      )}
     </Container>
   );
 }

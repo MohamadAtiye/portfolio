@@ -1,19 +1,22 @@
 import { Box, Container, Paper } from "@mui/material";
 import { ReactNode } from "react";
 import SubHeader from "./SubHeader";
+import { useDashboard } from "../hooks/useDashboard";
+import { APP_NAMES } from "../assets/constants";
 
 interface PagePaperProps {
   subheader: string;
   children: ReactNode;
 }
 export default function PagePaper({ subheader, children }: PagePaperProps) {
+  const { activeApp } = useDashboard();
   return (
     <Container
       component={Paper}
       sx={{
         borderRadius: "20px",
         flex: 1,
-        padding: 1,
+        padding: activeApp === APP_NAMES.null ? 0 : 1,
         overflow: "hidden",
         bgcolor: "rgba(255,255,255,0.2)",
         display: "flex",

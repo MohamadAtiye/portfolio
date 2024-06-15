@@ -7,7 +7,7 @@ export enum APP_NAMES {
 
 export const APPS: Record<APP_NAMES, { text: string }> = {
   null: {
-    text: "",
+    text: "Close",
   },
   todo: {
     text: "ToDo",
