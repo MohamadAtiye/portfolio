@@ -11,6 +11,8 @@ export type MediaRecording = {
   audio: HTMLAudioElement;
   id: string;
   time: number;
+  name: string;
+  audioUrl: string;
 };
 
 export function msToTime(duration: number) {
@@ -112,6 +114,8 @@ export class AudioRecorder {
           audio: new Audio(audioUrl),
           id: uuidv4(),
           time: elapsed,
+          name: `rec${AudioRecorder.audioRecordings.length}`,
+          audioUrl,
         });
 
         //end stream

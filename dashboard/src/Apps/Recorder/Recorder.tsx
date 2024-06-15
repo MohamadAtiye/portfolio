@@ -12,8 +12,8 @@ import {
   AudioRecorder,
   MediaRecording,
   RecorderStatus,
-  msToTime,
 } from "./helpers/AudioRecorder";
+import RecordingEntry from "./components/RecordingEntry";
 
 export default function Recorder() {
   const [recorderStatus, setRecorderStatus] = useState<RecorderStatus>(
@@ -89,10 +89,8 @@ export default function Recorder() {
       ></canvas>
 
       <Typography>Recordings:</Typography>
-      {recordings.map((r, i) => (
-        <Typography key={r.id}>
-          recording {i+1}, duration: {msToTime(r.time)}
-        </Typography>
+      {recordings.map((r) => (
+        <RecordingEntry r={r} key={r.id} />
       ))}
     </Box>
   );
