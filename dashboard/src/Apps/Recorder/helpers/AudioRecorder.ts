@@ -10,7 +10,27 @@ export enum RecorderStatus {
 export type MediaRecording = {
   audio: HTMLAudioElement;
   id: string;
+  time: number;
 };
+
+export function msToTime(duration: number) {
+  const milliseconds = Math.floor(duration % 1000),
+    seconds = Math.floor((duration / 1000) % 60),
+    minutes = Math.floor((duration / (1000 * 60)) % 60),
+    hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
+
+  const s_hours = hours < 10 ? "0" + hours : hours;
+  const s_minutes = minutes < 10 ? "0" + minutes : minutes;
+  const s_seconds = seconds < 10 ? "0" + seconds : seconds;
+  const s_milliseconds =
+    milliseconds < 10
+      ? "00" + milliseconds
+      : milliseconds < 100
+      ? "0" + milliseconds
+      : milliseconds;
+
+  return s_hours + ":" + s_minutes + ":" + s_seconds + ":" + s_milliseconds;
+}
 
 export class AudioRecorder {
   private static recorderStatus = RecorderStatus.idle as RecorderStatus;
@@ -22,8 +42,9 @@ export class AudioRecorder {
   private static audioChunks: Blob[] = [];
   private static stream = null as MediaStream | null;
   private static mediaRecorder = null as MediaRecorder | null;
-
   private static audioRecordings = [] as MediaRecording[];
+
+  private static timerEl = null as HTMLSpanElement | null;
 
   private static statusCB = (
     status: RecorderStatus,
@@ -41,13 +62,45 @@ export class AudioRecorder {
   }
 
   private static handleEvents() {
+    let lastTime = 0;
+    let elapsed = 0;
+    let countTimeLoop = 0;
+    function countTime() {
+      const now = Date.now();
+      elapsed += now - lastTime;
+      lastTime = now;
+
+      if (AudioRecorder.timerEl)
+        AudioRecorder.timerEl.innerText = msToTime(elapsed);
+
+      countTimeLoop = requestAnimationFrame(countTime);
+    }
+    function startTime() {
+      countTimeLoop = requestAnimationFrame(countTime);
+    }
+    function stopTime() {
+      cancelAnimationFrame(countTimeLoop);
+    }
+
     if (AudioRecorder.mediaRecorder) {
       AudioRecorder.mediaRecorder.ondataavailable = (event) => {
         AudioRecorder.audioChunks = [...AudioRecorder.audioChunks, event.data];
       };
 
+      AudioRecorder.mediaRecorder.onstart = () => {
+        elapsed = 0;
+        lastTime = Date.now();
+        startTime();
+      };
+
+      AudioRecorder.mediaRecorder.onresume = () => {
+        lastTime = Date.now();
+        startTime();
+      };
+
       AudioRecorder.mediaRecorder.onpause = () => {
         AudioRecorder.setStatus(RecorderStatus.paused);
+        stopTime();
       };
 
       AudioRecorder.mediaRecorder.onstop = () => {
@@ -58,19 +111,38 @@ export class AudioRecorder {
         AudioRecorder.audioRecordings.push({
           audio: new Audio(audioUrl),
           id: uuidv4(),
+          time: elapsed,
         });
 
         //end stream
-        AudioRecorder.stream?.getTracks().forEach((t) => {
-          t.stop();
-          AudioRecorder.stream?.removeTrack(t);
-        });
         AudioRecorder.setStatus(RecorderStatus.stopped);
+
+        stopTime();
+        AudioRecorder.cleanup();
       };
     }
   }
 
+  private static cleanup() {
+    AudioRecorder.stream?.getTracks().forEach((t) => {
+      t.stop();
+      AudioRecorder.stream?.removeTrack(t);
+    });
+
+    if (AudioRecorder.mediaRecorder) {
+      AudioRecorder.mediaRecorder.ondataavailable = null;
+      AudioRecorder.mediaRecorder.onstart = null;
+      AudioRecorder.mediaRecorder.onresume = null;
+      AudioRecorder.mediaRecorder.onpause = null;
+      AudioRecorder.mediaRecorder.onstop = null;
+      AudioRecorder.mediaRecorder = null;
+    }
+  }
+
   // exposed functions
+  static setTimerEl(el: HTMLSpanElement) {
+    AudioRecorder.timerEl = el;
+  }
   static subscribeOnStatusChange(
     cb: (status: RecorderStatus, recordings: MediaRecording[]) => void
   ) {

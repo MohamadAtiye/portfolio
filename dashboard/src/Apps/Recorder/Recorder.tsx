@@ -12,6 +12,7 @@ import {
   AudioRecorder,
   MediaRecording,
   RecorderStatus,
+  msToTime,
 } from "./helpers/AudioRecorder";
 
 export default function Recorder() {
@@ -20,6 +21,7 @@ export default function Recorder() {
   );
   const [recordings, setRecordings] = useState<MediaRecording[]>([]);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const timerRef = useRef<HTMLSpanElement | null>(null);
 
   const isRecording = recorderStatus === RecorderStatus.recording;
 
@@ -33,6 +35,10 @@ export default function Recorder() {
         setRecordings(recordingsList);
       }
     );
+
+    if (timerRef.current) {
+      AudioRecorder.setTimerEl(timerRef.current);
+    }
   }, []);
 
   return (
@@ -44,6 +50,10 @@ export default function Recorder() {
         gap: 1,
       }}
     >
+      <Typography ref={timerRef} sx={{ fontSize: "2rem", textAlign: "center" }}>
+        00:00:00
+      </Typography>
+
       <Box
         sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
       >
@@ -80,9 +90,9 @@ export default function Recorder() {
 
       <Typography>Recordings:</Typography>
       {recordings.map((r, i) => (
-        <Box key={r.id}>
-          recording {i} {r.id}
-        </Box>
+        <Typography key={r.id}>
+          recording {i+1}, duration: {msToTime(r.time)}
+        </Typography>
       ))}
     </Box>
   );
