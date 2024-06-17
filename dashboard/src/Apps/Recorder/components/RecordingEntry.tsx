@@ -1,5 +1,5 @@
 import { IconButton, Typography } from "@mui/material";
-import { MediaRecording, msToTime } from "../helpers/AudioRecorder";
+import { MediaRecording, msToTime } from "../helpers/RecorderClass";
 import SaveAltIcon from "@mui/icons-material/SaveAlt";
 
 interface RecordingEntryProps {
