@@ -68,7 +68,7 @@ export default function AudioPlayer() {
       </Box>
 
       <Typography>Recordings:</Typography>
-      <List>
+      <List sx={{ overflowY: "auto" }}>
         {recordings.map((r) => (
           <RecordingEntry r={r} key={r.id} />
         ))}

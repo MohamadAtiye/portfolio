@@ -13,7 +13,6 @@ export default function AudioRecorder() {
 
   useEffect(() => {
     RecorderClass.subscribeOnStatusChange((status: RecorderStatus) => {
-      console.log({ status });
       setRecorderStatus(status);
     });
 

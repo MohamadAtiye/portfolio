@@ -11,7 +11,7 @@ export default function Recorder() {
         display: "flex",
         flexDirection: "column",
         gap: 1,
-        overflowY: "auto",
+        overflow: "hidden",
       }}
     >
       <AudioRecorder />
