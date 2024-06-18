@@ -11,10 +11,10 @@ export enum RecorderStatus {
 export function msToTime(duration: number) {
   const milliseconds = Math.floor(duration % 1000),
     seconds = Math.floor((duration / 1000) % 60),
-    minutes = Math.floor((duration / (1000 * 60)) % 60),
-    hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
+    minutes =
+      Math.floor((duration / (1000 * 60)) % 60) +
+      Math.floor((duration / (1000 * 60 * 60)) * 60); // Convert hours to minutes and add to minutes
 
-  const s_hours = hours < 10 ? "0" + hours : hours;
   const s_minutes = minutes < 10 ? "0" + minutes : minutes;
   const s_seconds = seconds < 10 ? "0" + seconds : seconds;
   const s_milliseconds =
@@ -24,7 +24,7 @@ export function msToTime(duration: number) {
       ? "0" + milliseconds
       : milliseconds;
 
-  return s_hours + ":" + s_minutes + ":" + s_seconds + ":" + s_milliseconds;
+  return s_minutes + ":" + s_seconds + ":" + s_milliseconds;
 }
 
 export class RecorderClass {
@@ -100,6 +100,10 @@ export class RecorderClass {
         RecorderClass.setStatus(RecorderStatus.stopped);
 
         stopTime();
+
+        elapsed = 0;
+        if (RecorderClass.timerEl)
+          RecorderClass.timerEl.innerText = msToTime(elapsed);
         RecorderClass.cleanup();
       };
     }

@@ -10,7 +10,7 @@ export class VisualiserClass {
   private static canvas = null as HTMLCanvasElement | null;
   private static canvasContext = null as CanvasRenderingContext2D | null;
 
-  static setupVisualizerForAudioElement(src: HTMLAudioElement | MediaStream) {
+  static setupVisualizerForAudioElement(src: MediaStream) {
     console.log("setupVisualizerForAudioElement", src);
 
     // cleanup
@@ -38,9 +38,7 @@ export class VisualiserClass {
     );
 
     VisualiserClass.mediaElementSourceNode =
-      src instanceof HTMLAudioElement
-        ? VisualiserClass.audioContext.createMediaElementSource(src)
-        : VisualiserClass.audioContext.createMediaStreamSource(src);
+      VisualiserClass.audioContext.createMediaStreamSource(src);
 
     VisualiserClass.mediaElementSourceNode.connect(VisualiserClass.analyser);
     VisualiserClass.analyser.connect(VisualiserClass.audioContext.destination);
@@ -49,7 +47,6 @@ export class VisualiserClass {
   }
 
   static setVisualiserCanvas(canvas: HTMLCanvasElement) {
-    console.log("setVisualiserCanvas", canvas);
     VisualiserClass.canvas = canvas;
     VisualiserClass.canvasContext = canvas.getContext("2d");
   }

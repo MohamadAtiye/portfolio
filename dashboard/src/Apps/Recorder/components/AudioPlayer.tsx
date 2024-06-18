@@ -1,27 +1,25 @@
-import { useEffect, useState } from "react";
-import {
-  MediaRecording,
-  PlayerClass,
-  PlayerStatus,
-} from "../helpers/PlayerClass";
-import { Box, Typography } from "@mui/material";
-import { PauseButton, PlayButton } from "./MediaButtons";
+import { useEffect, useRef, useState } from "react";
+import { MediaRecording, PlayerClass } from "../helpers/PlayerClass";
+import { Box, List, Typography } from "@mui/material";
 import RecordingEntry from "./RecordingEntry";
 
 export default function AudioPlayer() {
-  const [playerStatus, setPlayerStatus] = useState<PlayerStatus>(
-    PlayerStatus.idle
-  );
   const [recordings, setRecordings] = useState<MediaRecording[]>([]);
+  const timerRef = useRef<HTMLSpanElement | null>(null);
+  const trackNameRef = useRef<HTMLSpanElement | null>(null);
+  const playerDivRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    PlayerClass.subscribeOnStatusChange(
-      (status: PlayerStatus, recordingsList: MediaRecording[]) => {
-        console.log({ status, recordingsList });
-        setPlayerStatus(status);
-        setRecordings(recordingsList);
-      }
-    );
+    if (trackNameRef.current && playerDivRef.current && timerRef.current)
+      PlayerClass.setHtmlElements(
+        trackNameRef.current,
+        timerRef.current,
+        playerDivRef.current
+      );
+
+    PlayerClass.subscribeOnStatusChange((recordingsList: MediaRecording[]) => {
+      setRecordings([...recordingsList]);
+    });
   }, []);
 
   return (
@@ -30,18 +28,51 @@ export default function AudioPlayer() {
         Player
       </Typography>
       <Box
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+        sx={{
+          border: "1px solid black",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignContent: "center",
+          flexWrap: "wrap",
+        }}
       >
-        {(playerStatus === PlayerStatus.ready ||
-          playerStatus === PlayerStatus.paused) && (
-          <PlayButton onClick={PlayerClass.playRecording} isDisabled={false} />
-        )}
-        <PauseButton onClick={PlayerClass.pauseRecording} isDisabled={false} />
+        <Box
+          sx={{
+            width: "300px",
+          }}
+        >
+          <Typography
+            ref={trackNameRef}
+            sx={{ textAlign: "center", fontSize: "1.5rem" }}
+          >
+            no track selected
+          </Typography>
+          <Typography
+            ref={timerRef}
+            sx={{ fontSize: "2rem", textAlign: "center" }}
+          >
+            00:00:000
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            width: "300px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            paddingBottom: "8px",
+          }}
+          ref={playerDivRef}
+        ></Box>
       </Box>
+
       <Typography>Recordings:</Typography>
-      {recordings.map((r) => (
-        <RecordingEntry r={r} key={r.id} />
-      ))}
+      <List>
+        {recordings.map((r) => (
+          <RecordingEntry r={r} key={r.id} />
+        ))}
+      </List>
     </>
   );
 }

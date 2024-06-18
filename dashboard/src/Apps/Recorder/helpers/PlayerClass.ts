@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { VisualiserClass } from "./VisualiserClass";
+import { msToTime } from "./RecorderClass";
 
 export type MediaRecording = {
   audio: HTMLAudioElement;
@@ -9,36 +9,30 @@ export type MediaRecording = {
   audioUrl: string;
 };
 
-export enum PlayerStatus {
-  idle = "idle",
-  ready = "ready",
-  playing = "playing",
-  paused = "paused",
-}
-
 export class PlayerClass {
-  private static playerStatus = PlayerStatus.idle;
-  private static statusCB = (
-    status: PlayerStatus,
-    recordingsList: MediaRecording[]
-  ) => {
-    console.log(status, recordingsList);
+  private static statusCB = (recordingsList: MediaRecording[]) => {
+    console.log(recordingsList);
   };
   static subscribeOnStatusChange(
-    cb: (status: PlayerStatus, recordingsList: MediaRecording[]) => void
+    cb: (recordingsList: MediaRecording[]) => void
   ) {
     PlayerClass.statusCB = cb;
   }
-  private static setStatus = (status: PlayerStatus) => {
-    PlayerClass.playerStatus = status;
-    PlayerClass.triggerStatusCB();
-  };
   private static triggerStatusCB() {
-    PlayerClass.statusCB &&
-      PlayerClass.statusCB(
-        PlayerClass.playerStatus,
-        PlayerClass.audioRecordings
-      );
+    PlayerClass.statusCB && PlayerClass.statusCB(PlayerClass.audioRecordings);
+  }
+
+  private static trackNameRef = null as HTMLSpanElement | null;
+  private static timerRef = null as HTMLSpanElement | null;
+  private static playerDivRef = null as HTMLDivElement | null;
+  static setHtmlElements(
+    trackNameRef: HTMLSpanElement,
+    timerRef: HTMLSpanElement,
+    playerDivRef: HTMLDivElement
+  ) {
+    PlayerClass.trackNameRef = trackNameRef;
+    PlayerClass.timerRef = timerRef;
+    PlayerClass.playerDivRef = playerDivRef;
   }
 
   private static audioRecordings = [] as MediaRecording[];
@@ -59,29 +53,25 @@ export class PlayerClass {
     });
 
     PlayerClass.selectRecording(newId);
+    PlayerClass.triggerStatusCB();
   };
 
   static selectRecording = (id: string) => {
     const recording = PlayerClass.audioRecordings.find((r) => r.id === id);
     if (!recording) return;
+
     PlayerClass.selectedRecording = recording;
 
-    PlayerClass.setStatus(PlayerStatus.ready);
-  };
+    if (PlayerClass.trackNameRef)
+      PlayerClass.trackNameRef.innerText = recording.name;
 
-  static playRecording = () => {
-    if (!PlayerClass.selectedRecording) return;
+    if (PlayerClass.timerRef)
+      PlayerClass.timerRef.innerText = msToTime(recording.time);
 
-    VisualiserClass.setupVisualizerForAudioElement(
-      PlayerClass.selectedRecording.audio
-    );
-    PlayerClass.selectedRecording.audio.play();
-    PlayerClass.setStatus(PlayerStatus.playing);
-  };
-
-  static pauseRecording = () => {
-    if (!PlayerClass.selectedRecording) return;
-    PlayerClass.selectedRecording.audio.pause();
-    PlayerClass.setStatus(PlayerStatus.paused);
+    if (PlayerClass.playerDivRef) {
+      recording.audio.controls = true;
+      PlayerClass.playerDivRef.innerHTML = "";
+      PlayerClass.playerDivRef.appendChild(recording.audio);
+    }
   };
 }

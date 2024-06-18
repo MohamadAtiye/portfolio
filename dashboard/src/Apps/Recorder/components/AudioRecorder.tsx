@@ -24,31 +24,56 @@ export default function AudioRecorder() {
 
   return (
     <>
-      <Typography ref={timerRef} sx={{ fontSize: "2rem", textAlign: "center" }}>
-        00:00:00
-      </Typography>
-
       <Box
-        sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
+        sx={{
+          border: "1px solid black",
+          display: "flex",
+          justifyContent: "center",
+          flexWrap: "wrap",
+        }}
       >
-        <StopButton
-          onClick={RecorderClass.stopRecording}
-          isDisabled={
-            recorderStatus !== RecorderStatus.recording &&
-            recorderStatus !== RecorderStatus.paused
-          }
-        />
-        {!isRecording ? (
-          <RecordButton
-            onClick={RecorderClass.startRecording}
-            isDisabled={isRecording}
+        <Box
+          sx={{
+            width: "200px",
+          }}
+        >
+          <Typography sx={{ textAlign: "center", fontSize: "1.5rem" }}>
+            {recorderStatus}
+          </Typography>
+          <Typography
+            ref={timerRef}
+            sx={{ fontSize: "2rem", textAlign: "center" }}
+          >
+            00:00:000
+          </Typography>
+        </Box>
+        <Box
+          sx={{
+            width: "200px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <StopButton
+            onClick={RecorderClass.stopRecording}
+            isDisabled={
+              recorderStatus !== RecorderStatus.recording &&
+              recorderStatus !== RecorderStatus.paused
+            }
           />
-        ) : (
-          <PauseButton
-            onClick={RecorderClass.pauseRecording}
-            isDisabled={!isRecording}
-          />
-        )}
+          {!isRecording ? (
+            <RecordButton
+              onClick={RecorderClass.startRecording}
+              isDisabled={isRecording}
+            />
+          ) : (
+            <PauseButton
+              onClick={RecorderClass.pauseRecording}
+              isDisabled={!isRecording}
+            />
+          )}
+        </Box>
       </Box>
     </>
   );
