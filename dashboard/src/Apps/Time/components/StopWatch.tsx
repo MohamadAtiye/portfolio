@@ -70,7 +70,8 @@ export default function StopWatch() {
   useEffect(() => {
     if (timerRef.current)
       StopWatchClass.setEL(timerRef.current, (newLaps: number[]) => {
-        setLaps([...newLaps]);
+        // setLaps([...newLaps]);
+        setLaps([...newLaps].reverse());
       });
 
     return () => {
@@ -144,10 +145,13 @@ export default function StopWatch() {
         </Button>
       </Box>
       <Box>
-        <List sx={{ overflowY: "auto" }}>
+        <List sx={{ overflowY: "auto", maxHeight: "200px" }}>
           {laps.map((v, i) => (
             <ListItem key={`lap${i}`} disablePadding>
-              <ListItemText primary={`Lap ${i}`} secondary={`${msToTime(v)}`} />
+              <ListItemText
+                primary={`Lap ${laps.length - i}`}
+                secondary={`${msToTime(v)}`}
+              />
             </ListItem>
           ))}
         </List>

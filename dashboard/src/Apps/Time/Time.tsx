@@ -13,8 +13,8 @@ export default function Time() {
         overflowY: "auto",
       }}
     >
-      <TimeNow />
       <StopWatch />
+      <TimeNow />
     </Box>
   );
 }
