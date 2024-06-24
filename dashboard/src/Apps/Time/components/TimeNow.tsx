@@ -94,11 +94,8 @@ export default function TimeNow() {
   return (
     <Box
       sx={{
-        height: "100%",
         display: "flex",
         flexDirection: "column",
-        // gap: 1,
-        overflowY: "auto",
       }}
     >
       <Box

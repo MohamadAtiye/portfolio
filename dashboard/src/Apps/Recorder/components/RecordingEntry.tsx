@@ -1,6 +1,6 @@
 import { ListItem, ListItemButton, ListItemText } from "@mui/material";
-import { msToTime } from "../helpers/RecorderClass";
 import { MediaRecording, PlayerClass } from "../helpers/PlayerClass";
+import { msToTime } from "../../../helpers/utils";
 // import SaveAltIcon from "@mui/icons-material/SaveAlt";
 
 interface RecordingEntryProps {
