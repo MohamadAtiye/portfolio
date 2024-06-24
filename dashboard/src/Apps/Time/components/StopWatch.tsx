@@ -108,9 +108,11 @@ export default function StopWatch() {
 
   return (
     <Box
-      sx={{
-        width: "200px",
-      }}
+      sx={
+        {
+          // width: "200px",
+        }
+      }
     >
       <Typography sx={{ textAlign: "center", fontSize: "1.5rem" }}>
         {status}
@@ -118,11 +120,11 @@ export default function StopWatch() {
       <Typography ref={timerRef} sx={{ fontSize: "2rem", textAlign: "center" }}>
         00:00:000
       </Typography>
-      <Box sx={{ display: "flex", gap: 2 }}>
+      <Box sx={{ display: "flex", gap: 2, justifyContent: "center" }}>
         {/* Button L */}
         <Button
           onClick={handleBtnL}
-          sx={{ flex: 1 }}
+          sx={{ width: "80px" }}
           variant="contained"
           disabled={status === WatchStatus.idle}
         >
@@ -133,7 +135,7 @@ export default function StopWatch() {
         {/* Button R */}
         <Button
           onClick={handleBtnR}
-          sx={{ flex: 1 }}
+          sx={{ width: "80px" }}
           variant="contained"
           color={status === WatchStatus.started ? "error" : undefined}
         >
