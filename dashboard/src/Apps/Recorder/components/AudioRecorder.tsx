@@ -19,6 +19,11 @@ export default function AudioRecorder() {
     if (timerRef.current) {
       RecorderClass.setTimerEl(timerRef.current);
     }
+
+    return () => {
+      console.log("trigger cleanup");
+      RecorderClass.stopRecording();
+    };
   }, []);
 
   return (

@@ -94,16 +94,16 @@ export class RecorderClass {
       };
 
       RecorderClass.mediaRecorder.onstop = () => {
+        console.log("recording stopped");
         PlayerClass.addRecording(RecorderClass.audioChunks, elapsed);
 
-        //end stream
         RecorderClass.setStatus(RecorderStatus.stopped);
-
         stopTime();
 
         elapsed = 0;
         if (RecorderClass.timerEl)
           RecorderClass.timerEl.innerText = msToTime(elapsed);
+
         RecorderClass.cleanup();
       };
     }
@@ -126,8 +126,8 @@ export class RecorderClass {
 
     RecorderClass.audioChunks = [];
   }
-
   // exposed functions
+
   static setTimerEl(el: HTMLSpanElement) {
     RecorderClass.timerEl = el;
   }
@@ -160,7 +160,10 @@ export class RecorderClass {
   }
 
   static stopRecording = () => {
-    if (RecorderClass.mediaRecorder) {
+    if (
+      RecorderClass.mediaRecorder &&
+      RecorderClass.recorderStatus === RecorderStatus.recording
+    ) {
       RecorderClass.mediaRecorder.stop();
     }
     VisualiserClass.stopDraw();

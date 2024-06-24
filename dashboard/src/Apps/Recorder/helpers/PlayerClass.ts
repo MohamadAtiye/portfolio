@@ -36,7 +36,6 @@ export class PlayerClass {
   }
 
   private static audioRecordings = [] as MediaRecording[];
-  private static selectedRecording = null as MediaRecording | null;
 
   static addRecording = (audioChunks: Blob[], elapsed: number) => {
     const audioBlob = new Blob(audioChunks, {
@@ -56,22 +55,29 @@ export class PlayerClass {
     PlayerClass.triggerStatusCB();
   };
 
+  static currentTrack: MediaRecording | undefined;
   static selectRecording = (id: string) => {
-    const recording = PlayerClass.audioRecordings.find((r) => r.id === id);
-    if (!recording) return;
-
-    PlayerClass.selectedRecording = recording;
+    PlayerClass.currentTrack = PlayerClass.audioRecordings.find(
+      (r) => r.id === id
+    );
+    if (!PlayerClass.currentTrack) return;
 
     if (PlayerClass.trackNameRef)
-      PlayerClass.trackNameRef.innerText = recording.name;
+      PlayerClass.trackNameRef.innerText = PlayerClass.currentTrack.name;
 
     if (PlayerClass.timerRef)
-      PlayerClass.timerRef.innerText = msToTime(recording.time);
+      PlayerClass.timerRef.innerText = msToTime(PlayerClass.currentTrack.time);
 
     if (PlayerClass.playerDivRef) {
-      recording.audio.controls = true;
+      PlayerClass.currentTrack.audio.controls = true;
       PlayerClass.playerDivRef.innerHTML = "";
-      PlayerClass.playerDivRef.appendChild(recording.audio);
+      PlayerClass.playerDivRef.appendChild(PlayerClass.currentTrack.audio);
+    }
+  };
+
+  static cleanup = () => {
+    if (PlayerClass.currentTrack) {
+      PlayerClass.currentTrack.audio.pause();
     }
   };
 }

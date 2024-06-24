@@ -20,6 +20,10 @@ export default function AudioPlayer() {
     PlayerClass.subscribeOnStatusChange((recordingsList: MediaRecording[]) => {
       setRecordings([...recordingsList]);
     });
+
+    return () => {
+      PlayerClass.cleanup();
+    };
   }, []);
 
   return (
