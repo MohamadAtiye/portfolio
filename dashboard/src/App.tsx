@@ -9,6 +9,7 @@ import GLBackgroundBlob from "./components/GLBackgroundBlob";
 import Recorder from "./Apps/Recorder/Recorder";
 import { APPS, APP_NAMES } from "./assets/constants";
 import StopWatch from "./Apps/StopWatch/StopWatch";
+import Camera from "./Apps/Camera/Camera";
 
 function App() {
   const { activeApp } = useDashboard();
@@ -39,6 +40,7 @@ function App() {
           {activeApp === "time" && <Time />}
           {activeApp === "recorder" && <Recorder />}
           {activeApp === "stopwatch" && <StopWatch />}
+          {activeApp === "camera" && <Camera />}
         </PagePaper>
       )}
     </Box>

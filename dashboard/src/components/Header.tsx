@@ -1,8 +1,9 @@
 import { Button, Container, Paper, Typography } from "@mui/material";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
-import MicNoneOutlinedIcon from '@mui/icons-material/MicNoneOutlined';
+import MicNoneOutlinedIcon from "@mui/icons-material/MicNoneOutlined";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import TimerOutlinedIcon from "@mui/icons-material/TimerOutlined";
+import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 import { ReactNode, useState } from "react";
 import { useDashboard } from "../hooks/useDashboard";
@@ -64,15 +65,17 @@ export default function Header() {
   return (
     <Container
       sx={{
-        height: isScale ? "50vh" : "80px",
+        height: isScale ? "50vh" : "160px",
         transition: "height 0.5s ease-out",
 
         display: "flex",
-        alignItems: "center",
+        // alignItems: "center",
+        alignContent: "center",
         justifyContent: "center",
         bgcolor: "rgba(255,255,255,0.2)",
         borderRadius: "0 0 20px 20px",
         gap: isScale ? 4 : 1,
+        flexWrap: "wrap",
       }}
       component={Paper}
     >
@@ -105,6 +108,14 @@ export default function Header() {
         app={APP_NAMES.recorder}
         onClick={() => {
           handleClickApp(APP_NAMES.recorder);
+        }}
+        isScale={isScale}
+      />
+      <HeaderIcon
+        icon={<CameraAltOutlinedIcon fontSize="large" />}
+        app={APP_NAMES.camera}
+        onClick={() => {
+          handleClickApp(APP_NAMES.camera);
         }}
         isScale={isScale}
       />
