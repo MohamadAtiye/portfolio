@@ -3,6 +3,7 @@ export enum APP_NAMES {
   todo = "todo",
   time = "time",
   recorder = "recorder",
+  stopwatch = "stopwatch",
 }
 
 export const APPS: Record<APP_NAMES, { text: string }> = {
@@ -17,5 +18,8 @@ export const APPS: Record<APP_NAMES, { text: string }> = {
   },
   recorder: {
     text: "Recorder",
+  },
+  stopwatch: {
+    text: "Stopwatch",
   },
 };

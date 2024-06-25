@@ -1,7 +1,8 @@
 import { Button, Container, Paper, Typography } from "@mui/material";
 import PlaylistAddCheckIcon from "@mui/icons-material/PlaylistAddCheck";
-import SettingsVoiceIcon from "@mui/icons-material/SettingsVoice";
+import MicNoneOutlinedIcon from '@mui/icons-material/MicNoneOutlined';
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import TimerOutlinedIcon from "@mui/icons-material/TimerOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 import { ReactNode, useState } from "react";
 import { useDashboard } from "../hooks/useDashboard";
@@ -92,7 +93,15 @@ export default function Header() {
         isScale={isScale}
       />
       <HeaderIcon
-        icon={<SettingsVoiceIcon fontSize="large" />}
+        icon={<TimerOutlinedIcon fontSize="large" />}
+        app={APP_NAMES.stopwatch}
+        onClick={() => {
+          handleClickApp(APP_NAMES.stopwatch);
+        }}
+        isScale={isScale}
+      />
+      <HeaderIcon
+        icon={<MicNoneOutlinedIcon fontSize="large" />}
         app={APP_NAMES.recorder}
         onClick={() => {
           handleClickApp(APP_NAMES.recorder);

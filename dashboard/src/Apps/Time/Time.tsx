@@ -1,6 +1,5 @@
 import { Box } from "@mui/material";
 import TimeNow from "./components/TimeNow";
-import StopWatch from "./components/StopWatch";
 
 export default function Time() {
   return (
@@ -13,7 +12,6 @@ export default function Time() {
         overflowY: "auto",
       }}
     >
-      <StopWatch />
       <TimeNow />
     </Box>
   );

@@ -7,7 +7,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
-import { msToTime } from "../../../helpers/utils";
+import { msToTime } from "../../helpers/utils";
 
 enum WatchStatus {
   idle = "idle",
@@ -108,23 +108,26 @@ export default function StopWatch() {
 
   return (
     <Box
-      sx={
-        {
-          // width: "200px",
-        }
-      }
+      sx={{
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        gap: 1,
+        overflowY: "hidden",
+        paddingTop: "36px",
+      }}
     >
       <Typography sx={{ textAlign: "center", fontSize: "1.5rem" }}>
         {status}
       </Typography>
-      <Typography ref={timerRef} sx={{ fontSize: "2rem", textAlign: "center" }}>
+      <Typography ref={timerRef} sx={{ fontSize: "3rem", textAlign: "center" }}>
         00:00:000
       </Typography>
       <Box sx={{ display: "flex", gap: 2, justifyContent: "center" }}>
         {/* Button L */}
         <Button
           onClick={handleBtnL}
-          sx={{ width: "80px" }}
+          sx={{ width: "100px" }}
           variant="contained"
           disabled={status === WatchStatus.idle}
         >
@@ -135,7 +138,7 @@ export default function StopWatch() {
         {/* Button R */}
         <Button
           onClick={handleBtnR}
-          sx={{ width: "80px" }}
+          sx={{ width: "100px" }}
           variant="contained"
           color={status === WatchStatus.started ? "error" : undefined}
         >
@@ -146,8 +149,8 @@ export default function StopWatch() {
             : "Resume"}
         </Button>
       </Box>
-      <Box>
-        <List sx={{ overflowY: "auto", maxHeight: "200px" }}>
+      <Box sx={{ overflowY: "hidden" }}>
+        <List sx={{ overflowY: "auto", height: "100%" }}>
           {laps.map((v, i) => (
             <ListItem key={`lap${i}`} disablePadding>
               <ListItemText

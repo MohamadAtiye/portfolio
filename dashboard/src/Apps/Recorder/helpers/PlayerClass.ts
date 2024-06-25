@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import { msToTime } from "./RecorderClass";
+import { msToTime } from "../../../helpers/utils";
 
 export type MediaRecording = {
   audio: HTMLAudioElement;
