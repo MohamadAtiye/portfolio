@@ -85,6 +85,14 @@ const getNextBgMode = (currentMode: BgMode): BgMode => {
   return bgModes[nextIndex];
 };
 
+const resolutions = [
+  { label: "640x480 (VGA)", value: "640x480" },
+  { label: "1280x720 (HD)", value: "1280x720" },
+  { label: "1920x1080 (Full HD)", value: "1920x1080" },
+  { label: "2560x1440 (QHD)", value: "2560x1440" },
+  { label: "3840x2160 (4K)", value: "3840x2160" },
+];
+
 export default function Camera() {
   const stream = useRef<MediaStream | null>(null);
   // const secondStream = useRef<MediaStream | null>(null);
@@ -104,14 +112,6 @@ export default function Camera() {
     width: number;
     height: number;
   }>({ width: 0, height: 0 });
-
-  const resolutions = [
-    { label: "640x480 (VGA)", value: "640x480" },
-    { label: "1280x720 (HD)", value: "1280x720" },
-    { label: "1920x1080 (Full HD)", value: "1920x1080" },
-    { label: "2560x1440 (QHD)", value: "2560x1440" },
-    { label: "3840x2160 (4K)", value: "3840x2160" },
-  ];
 
   // handle device listing and selection
   useEffect(() => {
