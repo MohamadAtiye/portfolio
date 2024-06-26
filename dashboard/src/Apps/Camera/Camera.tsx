@@ -1,5 +1,89 @@
 import { Box, Select, MenuItem, Typography, Button } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
+import * as bodyPix from "@tensorflow-models/body-pix";
+import "@tensorflow/tfjs";
+
+const backgroundImage = new Image();
+backgroundImage.src = "./beach.jpg";
+backgroundImage.onload = (ev) => {
+  console.log("loaded img", ev);
+};
+backgroundImage.onerror = (ev) => console.log("error", ev);
+console.log(backgroundImage);
+
+class PixWrapper {
+  static net: bodyPix.BodyPix | null = null;
+  static canvas = new OffscreenCanvas(640, 360);
+  static context = PixWrapper.canvas.getContext("2d", {
+    willReadFrequently: true,
+  }) as OffscreenCanvasRenderingContext2D;
+
+  // static canvas2 = new OffscreenCanvas(640, 360);
+  // static context2 = PixWrapper.canvas2.getContext("2d", {
+  //   willReadFrequently: true,
+  // }) as OffscreenCanvasRenderingContext2D;
+
+  static async load() {
+    if (!PixWrapper.net) PixWrapper.net = await bodyPix.load();
+  }
+
+  static blurBackground = async (src: OffscreenCanvas) => {
+    await PixWrapper.load();
+    if (!PixWrapper.net) return src;
+
+    PixWrapper.canvas.width = src.width;
+    PixWrapper.canvas.height = src.height;
+
+    const segmentation = await PixWrapper.net.segmentPerson(src);
+    bodyPix.drawBokehEffect(
+      PixWrapper.canvas,
+      src,
+      segmentation,
+      10, // Blur amount
+      7, // Edge blur amount
+      false // Flip horizontal
+    );
+
+    return PixWrapper.canvas;
+  };
+
+  static changeBackground = async (
+    src: OffscreenCanvas,
+    background: HTMLImageElement
+  ) => {
+    await PixWrapper.load();
+    if (!PixWrapper.net) return src;
+
+    const segmentation = await PixWrapper.net.segmentPerson(src);
+
+    const mask = bodyPix.toMask(segmentation);
+
+    PixWrapper.canvas.width = src.width;
+    PixWrapper.canvas.height = src.height;
+
+    // mask the background
+    PixWrapper.context.putImageData(mask, 0, 0);
+
+    // draw background over masked
+    PixWrapper.context.globalCompositeOperation = "source-in";
+    PixWrapper.context.drawImage(background, 0, 0, src.width, src.height);
+    PixWrapper.context.globalCompositeOperation = "source-over";
+
+    return PixWrapper.canvas;
+  };
+}
+
+enum BgMode {
+  none = "none",
+  blur = "blur",
+  image = "image",
+}
+const bgModes = Object.values(BgMode);
+const getNextBgMode = (currentMode: BgMode): BgMode => {
+  const currentIndex = bgModes.indexOf(currentMode);
+  const nextIndex = (currentIndex + 1) % bgModes.length;
+  return bgModes[nextIndex];
+};
 
 export default function Camera() {
   const stream = useRef<MediaStream | null>(null);
@@ -10,7 +94,7 @@ export default function Camera() {
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>("");
   const [selectedResolution, setSelectedResolution] =
     useState<string>("640x480");
-  const [isBlur, setIsBlur] = useState(false);
+  const [bgMode, setBgMode] = useState<BgMode>(BgMode.none);
 
   const [videoSettings, setVideoSettings] = useState<{
     width: number;
@@ -134,7 +218,7 @@ export default function Camera() {
     let trackProcessor: MediaStreamTrackProcessor<VideoFrame>;
     let trackGenerator: MediaStreamVideoTrackGenerator;
     if (stream.current) {
-      if (!isBlur) {
+      if (bgMode === BgMode.none) {
         if (videoRef.current) videoRef.current.srcObject = stream.current;
         return;
       }
@@ -162,9 +246,22 @@ export default function Camera() {
           // Draw the frame onto the canvas
           context.drawImage(videoFrame, 0, 0);
 
+          const final =
+            bgMode === BgMode.blur
+              ? await PixWrapper.blurBackground(canvas)
+              : bgMode === BgMode.image
+              ? await PixWrapper.changeBackground(canvas, backgroundImage)
+              : canvas;
+          // const blured = await PixWrapper.blurBackground(canvas);
+          // const blured = await PixWrapper.changeBackground(
+          //   canvas,
+          //   backgroundImage
+          // );
+          context.drawImage(final, 0, 0);
+
           // Apply a blur filter
-          context.filter = "blur(10px)";
-          context.drawImage(canvas, 0, 0);
+          // context.filter = "blur(10px)";
+          // context.drawImage(canvas, 0, 0);
 
           // Create a new video frame from the canvas
           const blurredFrame = new VideoFrame(canvas, {
@@ -202,7 +299,7 @@ export default function Camera() {
         console.error(e);
       }
     };
-  }, [isBlur]);
+  }, [bgMode]);
 
   return (
     <Box
@@ -297,8 +394,8 @@ export default function Camera() {
           ))}
         </Select>
 
-        <Button onClick={() => setIsBlur((p) => !p)}>
-          {isBlur ? "unblur" : "blur"}
+        <Button onClick={() => setBgMode(getNextBgMode(bgMode))}>
+          Background : {bgMode}
         </Button>
       </Box>
     </Box>
