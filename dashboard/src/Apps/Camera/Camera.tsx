@@ -214,6 +214,7 @@ export default function Camera() {
     }
   }, [selectedResolution]);
 
+  // handle video effects
   useEffect(() => {
     let trackProcessor: MediaStreamTrackProcessor<VideoFrame>;
     let trackGenerator: MediaStreamVideoTrackGenerator;
