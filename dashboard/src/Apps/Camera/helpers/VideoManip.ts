@@ -58,6 +58,45 @@ export const getNextSegAlgo = (currentMode: SegAlgo): SegAlgo => {
   return segAlgos[nextIndex];
 };
 
+function getCentroid(imageData: ImageData) {
+  const { data, width, height } = imageData;
+  let sumX = 0;
+  let sumY = 0;
+  let count = 0;
+
+  for (let y = 0; y < height; y++) {
+    for (let x = 0; x < width; x++) {
+      const index = (y * width + x) * 4; // RGBA values
+      const alpha = data[index + 3]; // Use alpha channel to determine the presence of the person
+
+      if (alpha > 0) {
+        // Assuming non-transparent pixels represent the person
+        sumX += x;
+        sumY += y;
+        count++;
+      }
+    }
+  }
+
+  const centroidX = sumX / count;
+  const centroidY = sumY / count;
+
+  return { x: centroidX, y: centroidY };
+}
+
+function detectLeaningDirection(canvas: OffscreenCanvas) {
+  const ctx = canvas.getContext("2d")!;
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const centroid = getCentroid(imageData);
+  const canvasCenterX = canvas.width / 2;
+
+  if (centroid.x < canvasCenterX) {
+    return "left";
+  } else {
+    return "right";
+  }
+}
+
 export class VideoManip {
   static manip = {
     algo: SegAlgo.pix,
@@ -120,12 +159,12 @@ export class VideoManip {
         os_canvas.height = h;
 
         os_context.clearRect(0, 0, w, h);
+
         // draw background
         VideoManip.renderBG(os_context, videoFrame);
 
         // draw person
-        const seg = await VideoManip.segmentPerson(videoFrame);
-        os_context.drawImage(seg, 0, 0);
+        await VideoManip.renderSegmentPerson(videoFrame, os_context);
 
         console.timeEnd(`${rand}`);
 
@@ -237,7 +276,10 @@ export class VideoManip {
   static mask_context = VideoManip.mask_canvas.getContext("2d", {
     willReadFrequently: true,
   })!;
-  static segmentPerson = async (videoFrame: VideoFrame) => {
+  static renderSegmentPerson = async (
+    videoFrame: VideoFrame,
+    context: OffscreenCanvasRenderingContext2D
+  ) => {
     const manip = VideoManip.manip;
     const w = videoFrame.displayWidth;
     const h = videoFrame.displayHeight;
@@ -275,7 +317,19 @@ export class VideoManip {
       mask_context.globalCompositeOperation = "source-out";
       mask_context.drawImage(videoFrame, 0, 0, w, h);
     }
-    return mask_canvas;
+
+    if (manip.mode === BgMode.mirror) {
+      const dir = detectLeaningDirection(mask_canvas);
+      if (dir === "right")
+        context.drawImage(mask_canvas, w / 2, 0, w, h, w / 2, 0, w, h);
+      else {
+        context.drawImage(mask_canvas, 0, 0, w / 2, h, 0, 0, w / 2, h);
+      }
+    } else {
+      context.drawImage(mask_canvas, 0, 0);
+    }
+
+    // return mask_canvas;
   };
 
   //////////////////////// media pipe

@@ -252,6 +252,8 @@ export default function Camera() {
     }
   };
 
+  // TODO : add capture video
+
   return (
     <Box
       sx={{
@@ -276,7 +278,6 @@ export default function Camera() {
           autoPlay
           muted
           style={{
-            // backgroundColor: "black",
             width: "100%",
             height: "100%",
             objectFit: "contain",
@@ -340,6 +341,7 @@ export default function Camera() {
         <Select
           value={selectedDeviceId}
           onChange={(e) => setSelectedDeviceId(e.target.value as string)}
+          size="small"
         >
           {devices.map((device) => (
             <MenuItem key={device.deviceId} value={device.deviceId}>
@@ -351,6 +353,7 @@ export default function Camera() {
         <Select
           value={selectedResolution}
           onChange={(e) => setSelectedResolution(e.target.value as string)}
+          size="small"
         >
           {resolutions.map((res) => (
             <MenuItem key={res.value} value={res.value}>
@@ -359,9 +362,17 @@ export default function Camera() {
           ))}
         </Select>
 
-        <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            gap: 2,
+            flexWrap: "wrap",
+          }}
+        >
           <Button
             variant="contained"
+            size="small"
             onClick={() =>
               setManip((p) => ({ ...p, mode: getNextBgMode(manip.mode) }))
             }
@@ -370,13 +381,14 @@ export default function Camera() {
           </Button>
           <Button
             variant="contained"
+            size="small"
             onClick={() =>
               setManip((p) => ({ ...p, algo: getNextSegAlgo(manip.algo) }))
             }
           >
             Algo : {manip.algo}
           </Button>
-          <Button variant="contained" onClick={handleScreenshot}>
+          <Button variant="contained" size="small" onClick={handleScreenshot}>
             Capture
           </Button>
         </Box>
