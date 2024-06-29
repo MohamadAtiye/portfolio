@@ -21,6 +21,8 @@ export default function Camera() {
   // const secondStream = useRef<MediaStream | null>(null);
 
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>("");
   const [selectedResolution, setSelectedResolution] =
@@ -166,6 +168,90 @@ export default function Camera() {
     };
   }, [manip]);
 
+  const timeouter1 = useRef<NodeJS.Timeout>();
+  const timeouter2 = useRef<NodeJS.Timeout>();
+
+  const handleScreenshot = () => {
+    clearTimeout(timeouter1.current);
+    clearTimeout(timeouter2.current);
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+
+      canvas.style.display = "none";
+      canvas.style.transform = "none";
+      canvas.style.transition = "none";
+
+      const box = video.getBoundingClientRect();
+      // console.log(box);
+
+      const sr = box.width / box.height;
+
+      const vw = video.videoWidth;
+      const vh = video.videoHeight;
+      const r = vw / vh;
+
+      // console.log({ sr, r, vw, vh });
+
+      const sh = sr > r ? box.height : box.width / r;
+      const sw = sr > r ? box.height * r : box.width;
+      canvas.style.height = `${sh}px`;
+      canvas.style.width = `${sw}px`;
+
+      canvas.style.left = `${sr > r ? (box.width - sw) / 2 : 0}px`;
+      canvas.style.top = `${sr > r ? 0 : (box.height - sh) / 2}px`;
+
+      if (ctx) {
+        // Draw the video frame on the canvas
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        ctx.drawImage(video, 0, 0, vw, vh);
+
+        // // Add the shutter effect
+        canvas.style.border = "solid white";
+        canvas.style.transition = "none";
+        canvas.style.opacity = "1";
+        canvas.style.display = "block";
+
+        timeouter1.current = setTimeout(() => {
+          console.log("timeouter1");
+          canvas.style.transition = "all 1s ease-in-out";
+          canvas.style.transform = "scale(0.2) translate(-80%, 80%)";
+          canvas.style.opacity = "0";
+        }, 100);
+
+        timeouter2.current = setTimeout(() => {
+          console.log("timeouter2");
+          canvas.style.display = "none";
+          canvas.style.transform = "none";
+          canvas.style.transition = "none";
+        }, 1000);
+      }
+
+      const offCanvas = new OffscreenCanvas(vw, vh);
+      const offCtx = offCanvas.getContext("2d")!;
+      offCtx.drawImage(video, 0, 0);
+
+      // trigget download image
+      const a = document.createElement("a");
+
+      offCanvas
+        .convertToBlob()
+        .then((blob) => {
+          const url = URL.createObjectURL(blob);
+          a.href = url;
+          a.download = "canvas-image.png";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        })
+        .catch((e) => console.error(e));
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -182,6 +268,7 @@ export default function Camera() {
           display: "flex",
           justifyContent: "center",
           overflow: "hidden",
+          position: "relative",
         }}
       >
         <video
@@ -193,6 +280,19 @@ export default function Camera() {
             width: "100%",
             height: "100%",
             objectFit: "contain",
+          }}
+        />
+        <canvas
+          ref={canvasRef}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100px",
+            height: "100px",
+            opacity: 0.5,
+            display: "none",
+            pointerEvents: "none",
           }}
         />
       </Box>
@@ -275,6 +375,9 @@ export default function Camera() {
             }
           >
             Algo : {manip.algo}
+          </Button>
+          <Button variant="contained" onClick={handleScreenshot}>
+            Capture
           </Button>
         </Box>
       </Box>
