@@ -78,6 +78,7 @@ export class VideoManip {
   })!;
 
   // -- generic START - END
+  static isActive = false;
   static startVideoManip = (
     stream: MediaStream,
     videoEl: HTMLVideoElement,
@@ -86,6 +87,8 @@ export class VideoManip {
       mode: BgMode;
     }
   ) => {
+    console.log("startVideoManip");
+    VideoManip.isActive = true;
     VideoManip.manip = manip;
     const track = stream.getVideoTracks()[0];
     VideoManip.videoEl = videoEl;
@@ -158,6 +161,8 @@ export class VideoManip {
   };
 
   static stopVideoManip = async () => {
+    console.log("stopVideoManip");
+    VideoManip.isActive = true;
     try {
       if (VideoManip.trackGenerator) {
         VideoManip.trackGenerator.stop();

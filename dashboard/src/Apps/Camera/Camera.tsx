@@ -74,6 +74,9 @@ export default function Camera() {
     if (selectedDeviceId && !stream.current) {
       const [width, height] = "640x480".split("x").map(Number);
 
+      const VideoManipIsActive = VideoManip.isActive;
+      if (VideoManipIsActive) VideoManip.stopVideoManip();
+
       navigator.mediaDevices
         .getUserMedia({
           video: {
@@ -103,6 +106,12 @@ export default function Camera() {
 
           if (videoRef.current) {
             videoRef.current.srcObject = stream.current;
+            if (VideoManipIsActive)
+              VideoManip.startVideoManip(
+                stream.current,
+                videoRef.current,
+                VideoManip.manip
+              );
           }
         });
 
@@ -153,7 +162,7 @@ export default function Camera() {
     }
 
     return () => {
-      VideoManip.stopVideoManip();
+      if (VideoManip.isActive) VideoManip.stopVideoManip();
     };
   }, [manip]);
 
@@ -250,20 +259,24 @@ export default function Camera() {
           ))}
         </Select>
 
-        <Button
-          onClick={() =>
-            setManip((p) => ({ ...p, mode: getNextBgMode(manip.mode) }))
-          }
-        >
-          Mode : {manip.mode}
-        </Button>
-        <Button
-          onClick={() =>
-            setManip((p) => ({ ...p, algo: getNextSegAlgo(manip.algo) }))
-          }
-        >
-          Algo : {manip.algo}
-        </Button>
+        <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
+          <Button
+            variant="contained"
+            onClick={() =>
+              setManip((p) => ({ ...p, mode: getNextBgMode(manip.mode) }))
+            }
+          >
+            Mode : {manip.mode}
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() =>
+              setManip((p) => ({ ...p, algo: getNextSegAlgo(manip.algo) }))
+            }
+          >
+            Algo : {manip.algo}
+          </Button>
+        </Box>
       </Box>
     </Box>
   );
