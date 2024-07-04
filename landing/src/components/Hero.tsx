@@ -61,7 +61,7 @@ const rightSideText = [
   "Python",
   "ML & AI",
 ];
-const disapearingText = rightSideText.map((t) => ({
+const disappearingText = rightSideText.map((t) => ({
   text: t,
   delay: rand(0, 5, "s", true),
   duration: rand(2, 4, "s", true),
@@ -69,7 +69,7 @@ const disapearingText = rightSideText.map((t) => ({
 }));
 
 export default function Hero() {
-  console.log(disapearingText);
+  console.log(disappearingText);
   return (
     <Paper
       sx={{
@@ -96,7 +96,7 @@ export default function Hero() {
             textAlign: "right",
           }}
         >
-          {disapearingText.map((t) => (
+          {disappearingText.map((t) => (
             <AnimatedTypography
               key={t.text}
               sx={{
