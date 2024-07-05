@@ -5,6 +5,7 @@ import Journey from "./components/Journey";
 import Profile from "./components/Profile";
 import Footer from "./components/Footer";
 import ContactForm from "./components/ContactForm";
+import TechStack from "./components/TechStack";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
       <Container>
         <Profile />
         <Journey />
+        <TechStack />
         <ContactForm />
       </Container>
       <Footer />
