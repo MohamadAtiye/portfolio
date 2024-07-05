@@ -13,21 +13,26 @@ const history = [
   {
     title: "Worked as Senior Artificial Intelligence and Full stack Engineer",
     subtitle: "at Predictive Healthcare",
-    info: "Developed, trained, and integrated machine learning models for detection and prediction in the telemedicine field. Backend development using Node.js, TypeScript, and MySQL. Frontend development expertise with React and TypeScript.",
+    info: `ML: Python, TensorFlow, openCV, Keras, MediaPipe, object detection, recognition, and classification, image processing.
+    Frontend: React, Typescript. 
+    Backend: NodeJs, TypeScript, MySql, AWS, Prisma.`,
     from: "01.2022",
     to: "current",
   },
   {
     title: "Worked as Senior AI Engineer and WebRTC specialist",
     subtitle: "at Proximie",
-    info: "Led projects related to object detection, motion analysis, and tracking using C++, Python, OpenCV, and TensorFlow. R&D in hand detection, tracking, and segmentation algorithms using WebGL and JavaScript. R&D in Natural Language Processing and voice control. WebRTC specialist responsible for frontend media management, stream handling, and live streaming. Customized WebRTC stats metrics and analytics using the ELK stack. Proficient in React and TypeScript for front-end development. Expertise in web sockets with socketIO servers.",
+    info: `ML: TensorFlow, openCV, object detection and tracking, image processing, natural language processing. 
+    Frontend: React, Typescript, WebGL, Canvas 2d graphics, 3d graphics, WebRTC.
+    Backend: NodeJs, webSockets.
+    `,
     from: "11.2017",
     to: "12.2022",
   },
   {
     title: "Studied a Master's degree, Informatics and Computer Engineering",
     subtitle: "at Peter the Great St. Petersburg Polytechnic University",
-    info: "Focused on AI, ML, and image processing fundamentals. Completed courses in advanced mathematics, optimization, programming languages, and robotics. Thesis on path optimization for overhead bird’s eye drones using image processing.",
+    info: "Focused on AI, ML, and image processing fundamentals. Thesis on path optimization for overhead bird’s eye drones using image processing.",
     from: "09.2015",
     to: "07.2017",
   },
@@ -42,7 +47,7 @@ const history = [
   {
     title: "Studied a Bachelor's degree, Information Technology ",
     subtitle: "at Lebanese International University",
-    info: "Graduated with A-grades in programming courses. Emphasis on web and desktop app development, databases, networking, and IT infrastructure.",
+    info: "Emphasis on web and desktop app development, databases, networking, and IT infrastructure.",
     from: "10.2009",
     to: "07.2014",
   },
