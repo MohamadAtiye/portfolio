@@ -53,6 +53,57 @@ const history = [
   },
 ];
 
+import React, { ReactNode, useEffect, useRef, useState } from "react";
+
+interface ScrollToShowDivProps {
+  children: ReactNode;
+}
+const ScrollToShowDiv = ({ children }: ScrollToShowDivProps) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const divRef = useRef(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target); // Stop observing after the element is visible
+        }
+      },
+      {
+        threshold: 0.7, // Adjust as needed; 0.1 means 10% of the element is visible
+      }
+    );
+
+    if (divRef.current) {
+      observer.observe(divRef.current);
+    }
+
+    // Clean up the observer on component unmount
+    return () => {
+      if (divRef.current) {
+        observer.unobserve(divRef.current);
+      }
+    };
+  }, []);
+
+  return (
+    <Paper
+      ref={divRef}
+      sx={{
+        marginBottom: "50px",
+        position: "relative",
+        padding: 2,
+        opacity: isVisible ? 1 : 0,
+        transform: isVisible ? "" : "scale(0.9)translate(-50px,100px)",
+        transition: "all ease-in 0.3s",
+      }}
+    >
+      {children}
+    </Paper>
+  );
+};
+
 const appearDisappear = keyframes`
   0% {
     opacity: 1;
@@ -113,9 +164,9 @@ export default function Journey() {
         {/* sections */}
         <Box sx={{ paddingLeft: "70px" }}>
           {history.map((h, i) => (
-            <Paper
+            <ScrollToShowDiv
               key={h.title}
-              sx={{ marginBottom: "50px", position: "relative", padding: 2 }}
+              // sx={{ marginBottom: "50px", position: "relative", padding: 2 }}
             >
               <Typography fontSize={"1.1rem"}>{h.title}</Typography>
               <Typography variant="caption">{h.subtitle}</Typography>
@@ -148,7 +199,7 @@ export default function Journey() {
               >
                 {h.from}
               </Typography>
-            </Paper>
+            </ScrollToShowDiv>
           ))}
         </Box>
       </Box>
