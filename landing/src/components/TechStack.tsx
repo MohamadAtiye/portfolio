@@ -1,5 +1,5 @@
-import React from "react";
-import { Box, Grid, Typography } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Box, BoxProps, keyframes, styled, Typography } from "@mui/material";
 
 const techStack = [
   { name: "Python", src: "/images/python.png" },
@@ -14,52 +14,121 @@ const techStack = [
   { name: "Git", src: "/images/git.png" },
 ];
 
+const rotater = keyframes`
+0% {
+    transform: scale(1.2) translateX(0px) translateY(0px);
+    z-index:4;
+}
+25% {
+    transform: scale(1) translateX(calc(-50vw + 100px)) translateY(-40px);
+    z-index:3;
+}
+26% {
+    // transform: scale(1) calc(-50vw + 100px) translateY(-40px);
+    z-index:2;
+}
+50% {
+    transform: scale(0.8) translateX(0) translateY(-80px);
+    z-index:1;
+}
+74% {
+    // transform: scale(0.8) translateX(calc(50vw - 100px)) translateY(-80px);
+    z-index:2;
+}
+75% {
+    transform: scale(1) translateX(calc(50vw - 100px)) translateY(-40px);
+    z-index:3;
+}
+100% {
+    transform: scale(1.2) translateX(0px) translateY(0px);
+    z-index:4;
+}
+`;
+
+interface TechStackItemProps extends BoxProps {
+  delay?: number;
+  count?: number;
+}
+const TechStackItem = styled(Box)<TechStackItemProps>(
+  ({ delay = 0, count = 1 }) => ({
+    zIndex: 3,
+    fontSize: "24px",
+    //   opacity: 0,
+    left: "calc(50% - 60px)",
+    top: "80px",
+    animation: `${rotater} ${count}s linear  infinite`,
+    animationDelay: `${delay || 0}s`,
+    position: "absolute",
+  })
+);
+
 const TechStack: React.FC = () => {
+  const [scale, setScale] = useState(1); // Initial scale value, adjust as needed
+
+  useEffect(() => {
+    // Function to update scale based on window resize
+    const updateScale = () => {
+      const bodySize = document.body.clientWidth; // Get current body size
+      const minBodySize = 400;
+      const maxBodySize = 1000;
+
+      let newScale =
+        0.5 + ((bodySize - minBodySize) / (maxBodySize - minBodySize)) * 0.5;
+      newScale = Math.max(0.4, Math.min(1, newScale)); // Ensure scale stays within 0.5 to 1
+
+      setScale(newScale); // Update the state with the new scale value
+    };
+
+    // Add event listener for window resize
+    window.addEventListener("resize", updateScale);
+
+    // Initial call to set scale based on current window size
+    updateScale();
+
+    // Clean up event listener on component unmount
+    return () => {
+      window.removeEventListener("resize", updateScale);
+    };
+  }, []); // Empty dependency array ensures this effect runs only once on mount
+
   return (
     <Box sx={{ textAlign: "center", my: 5 }}>
       <Typography variant="h4" align="center" gutterBottom>
         Tech Stack
       </Typography>
-      <Grid container spacing={3} justifyContent="center">
-        {techStack.map((tech) => (
-          <Grid item key={tech.name} xs={6} sm={4} md={3} lg={2}>
+      <Box sx={{ position: "relative", height: "200px" }}>
+        {techStack.map((tech, i) => (
+          <TechStackItem delay={i} count={techStack.length}>
             <Box
               sx={{
+                transform: `scale(${scale})`,
+                width: "120px",
+                height: "120px",
+                borderRadius: "50%",
+                boxShadow: 3,
+                // transition: "transform 0.3s",
+                // "&:hover": {
+                //   transform: "scale(1.1)",
+                // },
                 display: "flex",
                 flexDirection: "column",
+                justifyContent: "center",
                 alignItems: "center",
-                gap: 1,
+                overflow: "hidden",
+                background:
+                  "linear-gradient(90deg, rgba(139,155,154,1) 11%, rgba(92,170,169,1) 43%, rgba(91,95,95,1) 100%)",
               }}
             >
-              <Box
-                sx={{
-                  width: "100px",
-                  height: "100px",
-                  borderRadius: "50%",
-                  boxShadow: 3,
-                  transition: "transform 0.3s",
-                  "&:hover": {
-                    transform: "scale(1.1)",
-                  },
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  overflow: "hidden",
-                  background:
-                    "linear-gradient(90deg, rgba(139,155,154,1) 11%, rgba(92,170,169,1) 43%, rgba(91,95,95,1) 100%)",
-                }}
-              >
-                <img
-                  src={tech.src}
-                  alt={tech.name}
-                  style={{ height: "70%", width: "70%", objectFit: "contain" }}
-                />
-              </Box>
+              <img
+                src={tech.src}
+                alt={tech.name}
+                style={{ height: "70px", width: "70px", objectFit: "contain" }}
+              />
               <Typography variant="subtitle1">{tech.name}</Typography>
             </Box>
-          </Grid>
+          </TechStackItem>
         ))}
-      </Grid>
+      </Box>
     </Box>
   );
 };
