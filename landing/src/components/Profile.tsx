@@ -10,8 +10,8 @@ export default function Profile() {
         to detail, and thirst for learning. Proven skills in software
         development, team leading, and working with tight timelines. With over 7
         years of professional experience, I am seeking the next opportunity to
-        make a difference and grow personally and contribute to the people
-        around me.{" "}
+        make a difference, grow personally and contribute to the people around
+        me.
       </Typography>
     </Box>
   );

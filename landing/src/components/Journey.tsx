@@ -8,6 +8,7 @@ import {
   keyframes,
   styled,
 } from "@mui/material";
+import { ReactNode, useEffect, useRef, useState } from "react";
 
 const history = [
   {
@@ -52,8 +53,6 @@ const history = [
     to: "07.2014",
   },
 ];
-
-import React, { ReactNode, useEffect, useRef, useState } from "react";
 
 interface ScrollToShowDivProps {
   children: ReactNode;

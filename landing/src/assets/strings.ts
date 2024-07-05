@@ -6,3 +6,5 @@ export const STRINGS = {
 };
 
 export const URL_DASHBOARD = "http://localhost:5174/";
+
+export const CONTACT_URL = "";
