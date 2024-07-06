@@ -13,7 +13,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $recipient = "mohamad.atiye@hotmail.com"; // Replace with your email address
     $subject = "New Contact Form Submission from $name";
     $email_content = "Name: $name\n";
-    $email_content = "Email: $email\n\n";
+    $email_content .= "Email: $email\n\n";
     $email_content .= "Message:\n$message\n";
 
     $email_headers = "From: $name <$email>";
