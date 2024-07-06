@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Box, BoxProps, keyframes, styled, Typography } from "@mui/material";
+import { URL_DASHBOARD } from "../assets/strings";
 
 const techStack = [
   { name: "Python", src: "/images/python.png" },
@@ -12,6 +13,7 @@ const techStack = [
   { name: "NodeJs", src: "/images/nodejs.png" },
   { name: "Docker", src: "/images/docker.png" },
   { name: "Git", src: "/images/git.png" },
+  { name: "WebRTC", src: "/images/webrtc.png" },
 ];
 
 const rotater = keyframes`
@@ -92,13 +94,19 @@ const TechStack: React.FC = () => {
   }, []); // Empty dependency array ensures this effect runs only once on mount
 
   return (
-    <Box sx={{ textAlign: "center", my: 5 }}>
+    <Box>
       <Typography variant="h4" align="center" gutterBottom>
         Tech Stack
       </Typography>
-      <Box sx={{ position: "relative", height: "200px" }}>
+      <Typography align="center" gutterBottom>
+        Check my projects{" "}
+        <a href={URL_DASHBOARD} target="_blank">
+          here
+        </a>
+      </Typography>
+      <Box sx={{ position: "relative", height: "250px" }}>
         {techStack.map((tech, i) => (
-          <TechStackItem delay={i} count={techStack.length}>
+          <TechStackItem key={tech.name} delay={i} count={techStack.length}>
             <Box
               sx={{
                 transform: `scale(${scale})`,
@@ -106,10 +114,10 @@ const TechStack: React.FC = () => {
                 height: "120px",
                 borderRadius: "50%",
                 boxShadow: 3,
-                // transition: "transform 0.3s",
-                // "&:hover": {
-                //   transform: "scale(1.1)",
-                // },
+                transition: "transform 0.3s",
+                "&:hover": {
+                  transform: "scale(1.3)",
+                },
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "center",

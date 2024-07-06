@@ -144,7 +144,7 @@ const AnimatedBox = styled(Box)<AnimatedBoxProps>(({ delay, sx, count }) => ({
 
 export default function Journey() {
   return (
-    <Box my={3}>
+    <Box>
       <Typography variant="h4" align="center" gutterBottom>
         My Journey
       </Typography>
@@ -163,10 +163,7 @@ export default function Journey() {
         {/* sections */}
         <Box sx={{ paddingLeft: "70px" }}>
           {history.map((h, i) => (
-            <ScrollToShowDiv
-              key={h.title}
-              // sx={{ marginBottom: "50px", position: "relative", padding: 2 }}
-            >
+            <ScrollToShowDiv key={h.title}>
               <Typography fontSize={"1.1rem"}>{h.title}</Typography>
               <Typography variant="caption">{h.subtitle}</Typography>
               <Typography fontSize={"0.8rem"}>{h.info}</Typography>

@@ -62,12 +62,14 @@ const ContactForm: React.FC = () => {
       });
     } else {
       console.error("Form submission error");
-      // Optionally, show error message
     }
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit} my={3}>
+    <Box component="form" onSubmit={handleSubmit}>
+      <Typography id="anchor-Contact" variant="h4" align="center" gutterBottom>
+        Get in touch
+      </Typography>
       <Paper
         sx={{
           display: "flex",
@@ -78,7 +80,7 @@ const ContactForm: React.FC = () => {
           padding: 3,
           borderRadius: 1,
           position: "relative",
-          height: "440px",
+          height: "380px",
         }}
         elevation={3}
       >
@@ -101,9 +103,6 @@ const ContactForm: React.FC = () => {
           </Box>
         ) : (
           <>
-            <Typography variant="h4" component="h1" gutterBottom>
-              Get in touch
-            </Typography>
             <TextField
               label="Name"
               name="name"

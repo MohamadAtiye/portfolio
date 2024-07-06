@@ -12,7 +12,14 @@ function App() {
     <>
       <Header />
       <Hero />
-      <Container>
+      <Container
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 3,
+          padding: "16px",
+        }}
+      >
         <Profile />
         <Journey />
         <TechStack />

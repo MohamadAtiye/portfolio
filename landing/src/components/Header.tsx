@@ -15,7 +15,10 @@ import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import { Divider } from "@mui/material";
 import { STRINGS, URL_DASHBOARD } from "../assets/strings";
 
-const pages = ["About me", "Projects", "Contact"];
+const pages = [
+  { text: "About me", anchorId: "anchor-About-me" },
+  { text: "Contact", anchorId: "anchor-Contact" },
+];
 
 export default function Header() {
   const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
@@ -28,6 +31,12 @@ export default function Header() {
 
   const handleCloseNavMenu = () => {
     setAnchorElNav(null);
+  };
+
+  const handleMenuClick = (anchorId: string) => {
+    handleCloseNavMenu();
+    const element = document.getElementById(anchorId);
+    if (element) element.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -108,9 +117,12 @@ export default function Header() {
 
               {/* PAGES */}
               {pages.map((page) => (
-                <MenuItem key={page} onClick={handleCloseNavMenu}>
+                <MenuItem
+                  key={page.text}
+                  onClick={() => handleMenuClick(page.anchorId)}
+                >
                   <Typography width={"100%"} textAlign="center" fontSize={18}>
-                    {page}
+                    {page.text}
                   </Typography>
                 </MenuItem>
               ))}
@@ -161,11 +173,11 @@ export default function Header() {
             {/* PAGES */}
             {pages.map((page) => (
               <Button
-                key={page}
-                onClick={handleCloseNavMenu}
+                key={page.text}
+                onClick={() => handleMenuClick(page.anchorId)}
                 sx={{ my: 2, color: "white", display: "block", mx: 2 }}
               >
-                {page}
+                {page.text}
               </Button>
             ))}
           </Box>

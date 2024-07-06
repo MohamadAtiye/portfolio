@@ -69,7 +69,6 @@ const disappearingText = rightSideText.map((t) => ({
 }));
 
 export default function Hero() {
-  console.log(disappearingText);
   return (
     <Paper
       sx={{

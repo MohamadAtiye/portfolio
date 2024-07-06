@@ -9,14 +9,11 @@ export default function Footer() {
             sx={{
               display: "flex",
               flexDirection: "column",
-              //   gap: 1,
-              //   justifyContent: "center",
-              //   alignItems: "center",
               width: "100%",
             }}
           >
             <Typography align="center">
-              Be better than yesterday you. Made By me
+              Be better than yesterday you.
             </Typography>
             <Typography
               align="center"
