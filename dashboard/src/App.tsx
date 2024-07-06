@@ -7,7 +7,7 @@ import GLBackgroundSnow from "./components/GLBackgroundSnow";
 import Time from "./Apps/Time/Time";
 import GLBackgroundBlob from "./components/GLBackgroundBlob";
 import Recorder from "./Apps/Recorder/Recorder";
-import { APPS, APP_NAMES } from "./assets/constants";
+import { APP_NAMES } from "./assets/constants";
 import StopWatch from "./Apps/StopWatch/StopWatch";
 import Camera from "./Apps/Camera/Camera";
 
@@ -35,7 +35,7 @@ function App() {
       <Header />
 
       {activeApp !== APP_NAMES.null && (
-        <PagePaper subheader={APPS[activeApp]?.text}>
+        <PagePaper>
           {activeApp === "todo" && <Todo />}
           {activeApp === "time" && <Time />}
           {activeApp === "recorder" && <Recorder />}
