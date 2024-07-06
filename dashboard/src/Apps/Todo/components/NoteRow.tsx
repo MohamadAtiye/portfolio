@@ -1,5 +1,4 @@
 import { Box, Checkbox, Paper, Typography, IconButton } from "@mui/material";
-import { Note } from "../hooks/notesContext";
 import { useNotes } from "../hooks/useNotes";
 
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -7,6 +6,7 @@ import RestoreFromTrashIcon from "@mui/icons-material/RestoreFromTrash";
 
 import { useState } from "react";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
+import { Note } from "../helpers/types";
 
 interface NoteRowProps {
   note: Note;

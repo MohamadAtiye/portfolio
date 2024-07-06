@@ -5,7 +5,7 @@ import MenuItem from "@mui/material/MenuItem";
 import MenuIcon from "@mui/icons-material/Menu";
 import { Divider } from "@mui/material";
 import { useNotes } from "../hooks/useNotes";
-import { SortOption } from "../hooks/notesContext";
+import { SortOption } from "../helpers/types";
 
 const OptionsMenu = () => {
   const { displaySettings, setDisplaySettings } = useNotes();
