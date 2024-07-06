@@ -138,21 +138,11 @@ export class VideoManip {
     // for media pipe
     selfieSegmentation.onResults(VideoManip.onResults);
 
-    const rand = Math.random();
-    let skipper = 0;
     const transformer = new TransformStream({
       async transform(
         videoFrame: VideoFrame,
         controller: TransformStreamDefaultController
       ) {
-        if (skipper > 30) {
-          console.log(rand);
-          skipper = 0;
-        }
-        skipper++;
-
-        console.time(`${rand}`);
-
         const w = videoFrame.displayWidth;
         const h = videoFrame.displayHeight;
         os_canvas.width = w;
@@ -165,8 +155,6 @@ export class VideoManip {
 
         // draw person
         await VideoManip.renderSegmentPerson(videoFrame, os_context);
-
-        console.timeEnd(`${rand}`);
 
         // Create a new video frame from the canvas
         const blurredFrame = new VideoFrame(os_canvas, {
@@ -257,7 +245,6 @@ export class VideoManip {
       context.drawImage(videoFrame, 0, 0, w, h);
       context.filter = "none";
     } else if (manip.mode === BgMode.mirror) {
-      // TODO: expand on this
       context.scale(-1, 1);
       context.drawImage(videoFrame, 0, 0, -w, h);
     } else if (manip.mode === BgMode.image) {

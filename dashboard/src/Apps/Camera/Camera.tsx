@@ -216,14 +216,12 @@ export default function Camera() {
         canvas.style.display = "block";
 
         timeouter1.current = setTimeout(() => {
-          console.log("timeouter1");
           canvas.style.transition = "all 1s ease-in-out";
           canvas.style.transform = "scale(0.2) translate(-80%, 80%)";
           canvas.style.opacity = "0";
         }, 100);
 
         timeouter2.current = setTimeout(() => {
-          console.log("timeouter2");
           canvas.style.display = "none";
           canvas.style.transform = "none";
           canvas.style.transition = "none";
