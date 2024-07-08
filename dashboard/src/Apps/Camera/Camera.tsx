@@ -42,6 +42,8 @@ export default function Camera() {
     height: number;
   }>({ width: 0, height: 0 });
 
+  const vm = useRef(new VideoManip());
+
   // handle device listing and selection
   useEffect(() => {
     const getDevices = async () => {
@@ -76,8 +78,8 @@ export default function Camera() {
     if (selectedDeviceId && !stream.current) {
       const [width, height] = "640x480".split("x").map(Number);
 
-      const VideoManipIsActive = VideoManip.isActive;
-      if (VideoManipIsActive) VideoManip.stopVideoManip();
+      const VideoManipIsActive = vm.current.isActive;
+      if (VideoManipIsActive) vm.current.stopVideoManip();
 
       navigator.mediaDevices
         .getUserMedia({
@@ -109,10 +111,10 @@ export default function Camera() {
           if (videoRef.current) {
             videoRef.current.srcObject = stream.current;
             if (VideoManipIsActive)
-              VideoManip.startVideoManip(
+              vm.current.startVideoManip(
                 stream.current,
                 videoRef.current,
-                VideoManip.manip
+                vm.current.manip
               );
           }
         });
@@ -160,11 +162,11 @@ export default function Camera() {
         return;
       }
 
-      VideoManip.startVideoManip(stream.current, videoRef.current, manip);
+      vm.current.startVideoManip(stream.current, videoRef.current, manip);
     }
 
     return () => {
-      if (VideoManip.isActive) VideoManip.stopVideoManip();
+      if (vm.current.isActive) vm.current.stopVideoManip();
     };
   }, [manip]);
 

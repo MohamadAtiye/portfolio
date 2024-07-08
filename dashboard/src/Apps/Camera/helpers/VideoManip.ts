@@ -10,28 +10,6 @@ backgroundImage.onload = (ev) => {
 };
 backgroundImage.onerror = (ev) => console.log("error", ev);
 
-// initialize bodyPix selfie segmentation
-let net: bodyPix.BodyPix;
-const loadBodyPix = async () => {
-  try {
-    const n = await bodyPix.load();
-    net = n;
-  } catch (e) {
-    console.error(e);
-  }
-};
-loadBodyPix();
-
-// initialize media pipe selfie segmentationm
-const selfieSegmentation = new SelfieSegmentation({
-  locateFile: (file: string) =>
-    `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
-});
-selfieSegmentation.setOptions({
-  modelSelection: 1,
-  selfieMode: true,
-});
-
 export enum BgMode {
   none = "none",
   blur = "blur",
@@ -98,27 +76,52 @@ function detectLeaningDirection(canvas: OffscreenCanvas) {
 }
 
 export class VideoManip {
-  static manip = {
+  manip = {
     algo: SegAlgo.pix,
     mode: BgMode.none,
   };
 
-  static trackProcessor: MediaStreamTrackProcessor<VideoFrame> | null;
-  static trackGenerator: MediaStreamVideoTrackGenerator | null;
-  static videoEl: HTMLVideoElement;
-  static streamAfter: MediaStream;
+  trackProcessor: MediaStreamTrackProcessor<VideoFrame> | null = null;
+  trackGenerator: MediaStreamVideoTrackGenerator | null = null;
+  videoEl: HTMLVideoElement | null = null;
+  streamAfter: MediaStream | null = null;
 
-  static seg_mask_result: Results;
+  seg_mask_result: Results | null = null;
+
+  net: bodyPix.BodyPix | null = null;
+  selfieSegmentation: SelfieSegmentation | null = null;
+  constructor() {
+    // initialize bodyPix selfie segmentation
+    const loadBodyPix = async () => {
+      try {
+        const n = await bodyPix.load();
+        this.net = n;
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    loadBodyPix();
+
+    // initialize media pipe selfie segmentationm
+    this.selfieSegmentation = new SelfieSegmentation({
+      locateFile: (file: string) =>
+        `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
+    });
+    this.selfieSegmentation.setOptions({
+      modelSelection: 1,
+      selfieMode: true,
+    });
+  }
 
   // reusable canvas
-  static os_canvas = new OffscreenCanvas(640, 360);
-  static os_context = VideoManip.os_canvas.getContext("2d", {
+  os_canvas = new OffscreenCanvas(640, 360);
+  os_context = this.os_canvas.getContext("2d", {
     willReadFrequently: true,
   })!;
 
   // -- generic START - END
-  static isActive = false;
-  static startVideoManip = (
+  isActive = false;
+  startVideoManip = (
     stream: MediaStream,
     videoEl: HTMLVideoElement,
     manip: {
@@ -127,17 +130,20 @@ export class VideoManip {
     }
   ) => {
     console.log("startVideoManip");
-    VideoManip.isActive = true;
-    VideoManip.manip = manip;
+    this.isActive = true;
+    this.manip = manip;
     const track = stream.getVideoTracks()[0];
-    VideoManip.videoEl = videoEl;
+    this.videoEl = videoEl;
 
-    const os_canvas = VideoManip.os_canvas;
-    const os_context = VideoManip.os_context;
+    const os_canvas = this.os_canvas;
+    const os_context = this.os_context;
 
     // for media pipe
-    selfieSegmentation.onResults(VideoManip.onResults);
+    this.selfieSegmentation &&
+      this.selfieSegmentation.onResults(this.onResults);
 
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const vm = this;
     const transformer = new TransformStream({
       async transform(
         videoFrame: VideoFrame,
@@ -151,10 +157,10 @@ export class VideoManip {
         os_context.clearRect(0, 0, w, h);
 
         // draw background
-        VideoManip.renderBG(os_context, videoFrame);
+        vm.renderBG(os_context, videoFrame);
 
         // draw person
-        await VideoManip.renderSegmentPerson(videoFrame, os_context);
+        await vm.renderSegmentPerson(videoFrame, os_context);
 
         // Create a new video frame from the canvas
         const blurredFrame = new VideoFrame(os_canvas, {
@@ -170,72 +176,75 @@ export class VideoManip {
     });
 
     // create proccessor object that will handle frame changes
-    VideoManip.trackProcessor = new MediaStreamTrackProcessor({
+    this.trackProcessor = new MediaStreamTrackProcessor({
       track: track,
     });
     // create generator which composes frames back into a stream
-    VideoManip.trackGenerator = new MediaStreamTrackGenerator({
+    this.trackGenerator = new MediaStreamTrackGenerator({
       kind: "video",
     });
 
-    VideoManip.trackProcessor.readable
+    this.trackProcessor.readable
       .pipeThrough(transformer)
-      .pipeTo(VideoManip.trackGenerator.writable);
+      .pipeTo(this.trackGenerator.writable);
 
     // create the output stream
-    VideoManip.streamAfter = new MediaStream([VideoManip.trackGenerator]);
-    VideoManip.videoEl.srcObject = VideoManip.streamAfter;
+    this.streamAfter = new MediaStream([this.trackGenerator]);
+    this.videoEl.srcObject = this.streamAfter;
   };
 
-  static stopVideoManip = async () => {
+  stopVideoManip = async () => {
     console.log("stopVideoManip");
-    VideoManip.isActive = true;
+    this.isActive = true;
     try {
-      if (VideoManip.trackGenerator) {
-        VideoManip.trackGenerator.stop();
-        VideoManip.streamAfter.getTracks().forEach((t) => {
-          VideoManip.streamAfter.removeTrack(t);
-          t.stop();
-        });
-        // const r = VideoManip.trackGenerator.writable.getWriter();
+      if (this.trackGenerator) {
+        this.trackGenerator.stop();
+
+        this.streamAfter &&
+          this.streamAfter.getTracks().forEach((t) => {
+            t.stop();
+            this.streamAfter && this.streamAfter.removeTrack(t);
+          });
+
+        // const r =  this.trackGenerator.writable.getWriter();
         // r.releaseLock();
       }
-      // if (VideoManip.r) {
-      //   VideoManip.r.releaseLock();
-      //   await VideoManip.r.abort();
-      //   await VideoManip.r.close();
+      // if ( this.r) {
+      //    this.r.releaseLock();
+      //   await  this.r.abort();
+      //   await  this.r.close();
       // }
 
       // // Abort the writable stream of the track generator
-      // if (VideoManip.trackGenerator && VideoManip.wr) {
-      //   await VideoManip.wr.close(); //.abort();
-      //   await VideoManip.wr.abort();
+      // if ( this.trackGenerator &&  this.wr) {
+      //   await  this.wr.close(); //.abort();
+      //   await  this.wr.abort();
       // }
 
       // // Cancel the readable stream of the track processor
-      // if (VideoManip.trackProcessor && VideoManip.trackProcessor.readable) {
-      //   await VideoManip.re.cancel();
+      // if ( this.trackProcessor &&  this.trackProcessor.readable) {
+      //   await  this.re.cancel();
       // }
 
       // // Abort the writable stream of the track generator
-      // if (VideoManip.trackGenerator && VideoManip.trackGenerator.writable) {
-      //   await VideoManip.trackGenerator.writable.abort();
+      // if ( this.trackGenerator &&  this.trackGenerator.writable) {
+      //   await  this.trackGenerator.writable.abort();
       // }
 
       // Clear the references (optional but good for garbage collection)
-      VideoManip.trackProcessor = null;
-      VideoManip.trackGenerator = null;
+      this.trackProcessor = null;
+      this.trackGenerator = null;
     } catch (e) {
       console.error(e);
     }
   };
 
   //////////////////////// canvas opps
-  static renderBG = (
+  renderBG = (
     context: OffscreenCanvasRenderingContext2D,
     videoFrame: VideoFrame
   ) => {
-    const manip = VideoManip.manip;
+    const manip = this.manip;
     const w = videoFrame.displayWidth;
     const h = videoFrame.displayHeight;
 
@@ -259,32 +268,32 @@ export class VideoManip {
     context.restore();
   };
 
-  static mask_canvas = new OffscreenCanvas(640, 360);
-  static mask_context = VideoManip.mask_canvas.getContext("2d", {
+  mask_canvas = new OffscreenCanvas(640, 360);
+  mask_context = this.mask_canvas.getContext("2d", {
     willReadFrequently: true,
   })!;
-  static renderSegmentPerson = async (
+  renderSegmentPerson = async (
     videoFrame: VideoFrame,
     context: OffscreenCanvasRenderingContext2D
   ) => {
-    const manip = VideoManip.manip;
+    const manip = this.manip;
     const w = videoFrame.displayWidth;
     const h = videoFrame.displayHeight;
 
-    const mask_context = VideoManip.mask_context;
-    const mask_canvas = VideoManip.mask_canvas;
+    const mask_context = this.mask_context;
+    const mask_canvas = this.mask_canvas;
 
     mask_canvas.width = w;
     mask_canvas.height = h;
 
     mask_context.clearRect(0, 0, w, h);
     if (manip.algo === SegAlgo.mp) {
-      await VideoManip.sendFrame(videoFrame);
-      if (VideoManip.seg_mask_result) {
+      await this.sendFrame(videoFrame);
+      if (this.seg_mask_result) {
         mask_context.save();
         mask_context.scale(-1, 1);
         mask_context.drawImage(
-          VideoManip.seg_mask_result.segmentationMask,
+          this.seg_mask_result.segmentationMask,
           0,
           0,
           -w,
@@ -295,9 +304,9 @@ export class VideoManip {
         mask_context.drawImage(videoFrame, 0, 0, w, h);
         mask_context.restore();
       }
-    } else if (manip.algo === SegAlgo.pix) {
+    } else if (manip.algo === SegAlgo.pix && this.net) {
       mask_context.drawImage(videoFrame, 0, 0, w, h);
-      const segmentation = await net.segmentPerson(mask_canvas);
+      const segmentation = await this.net.segmentPerson(mask_canvas);
       const mask = bodyPix.toMask(segmentation);
       mask_context.clearRect(0, 0, w, h);
       mask_context.putImageData(mask, 0, 0);
@@ -321,20 +330,21 @@ export class VideoManip {
 
   //////////////////////// media pipe
 
-  static temp_canvas = document.createElement("canvas"); // HTMLCanvasElement();
-  static temp_context = VideoManip.temp_canvas.getContext("2d", {
+  temp_canvas = document.createElement("canvas"); // HTMLCanvasElement();
+  temp_context = this.temp_canvas.getContext("2d", {
     willReadFrequently: true,
   }) as CanvasRenderingContext2D;
-  static sendFrame = async (videoFrame: VideoFrame) => {
-    VideoManip.temp_canvas.width = videoFrame.displayWidth;
-    VideoManip.temp_canvas.height = videoFrame.displayHeight;
+  sendFrame = async (videoFrame: VideoFrame) => {
+    this.temp_canvas.width = videoFrame.displayWidth;
+    this.temp_canvas.height = videoFrame.displayHeight;
 
     // Draw the frame onto the canvas
-    VideoManip.temp_context.drawImage(videoFrame, 0, 0);
-    await selfieSegmentation.send({ image: VideoManip.temp_canvas });
+    this.temp_context.drawImage(videoFrame, 0, 0);
+    if (this.selfieSegmentation)
+      await this.selfieSegmentation.send({ image: this.temp_canvas });
   };
 
-  static onResults = (results: Results) => {
-    VideoManip.seg_mask_result = results;
+  onResults = (results: Results) => {
+    this.seg_mask_result = results;
   };
 }

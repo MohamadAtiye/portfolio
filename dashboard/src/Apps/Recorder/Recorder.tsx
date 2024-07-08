@@ -20,3 +20,6 @@ export default function Recorder() {
     </Box>
   );
 }
+
+
+// TODO : add transcribe
