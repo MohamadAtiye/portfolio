@@ -100,17 +100,40 @@ export class VideoManip {
         console.error(e);
       }
     };
-    loadBodyPix();
+    if (!this.net) loadBodyPix();
 
-    // initialize media pipe selfie segmentationm
-    this.selfieSegmentation = new SelfieSegmentation({
-      locateFile: (file: string) =>
-        `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`,
-    });
-    this.selfieSegmentation.setOptions({
-      modelSelection: 1,
-      selfieMode: true,
-    });
+    // initialize media pipe selfie segmentation
+    const loadMediaPipe = async () => {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const SelfieSegmentation = (window as any).SelfieSegmentation;
+        if (SelfieSegmentation) {
+          // console.log("SelfieSegmentation:", { SelfieSegmentation });
+
+          this.selfieSegmentation = new SelfieSegmentation({
+            locateFile: (file: string) => {
+              return `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}`;
+            },
+          });
+
+          this.selfieSegmentation &&
+            this.selfieSegmentation.setOptions({
+              modelSelection: 1,
+            });
+
+          // Use selfieSegmentation here
+        } else {
+          console.error(
+            "SelfieSegmentation is not available:",
+            SelfieSegmentation
+          );
+        }
+      } catch (error) {
+        console.error("Error loading Mediapipe:", error);
+      }
+    };
+
+    if (!this.selfieSegmentation) loadMediaPipe();
   }
 
   // reusable canvas
@@ -175,7 +198,7 @@ export class VideoManip {
       },
     });
 
-    // create proccessor object that will handle frame changes
+    // create processor object that will handle frame changes
     this.trackProcessor = new MediaStreamTrackProcessor({
       track: track,
     });
@@ -239,7 +262,7 @@ export class VideoManip {
     }
   };
 
-  //////////////////////// canvas opps
+  //////////////////////// canvas ops
   renderBG = (
     context: OffscreenCanvasRenderingContext2D,
     videoFrame: VideoFrame
@@ -290,16 +313,13 @@ export class VideoManip {
     if (manip.algo === SegAlgo.mp) {
       await this.sendFrame(videoFrame);
       if (this.seg_mask_result) {
-        mask_context.save();
-        mask_context.scale(-1, 1);
         mask_context.drawImage(
           this.seg_mask_result.segmentationMask,
           0,
           0,
-          -w,
+          w,
           h
         );
-        mask_context.restore();
         mask_context.globalCompositeOperation = "source-in";
         mask_context.drawImage(videoFrame, 0, 0, w, h);
         mask_context.restore();

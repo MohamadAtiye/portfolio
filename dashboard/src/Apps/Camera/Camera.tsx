@@ -234,7 +234,7 @@ export default function Camera() {
       const offCtx = offCanvas.getContext("2d")!;
       offCtx.drawImage(video, 0, 0);
 
-      // trigget download image
+      // trigger download image
       const a = document.createElement("a");
 
       offCanvas
