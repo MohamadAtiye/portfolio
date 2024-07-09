@@ -2,7 +2,7 @@ import { Box, Button } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import simplify from "simplify-js";
 
-type Tool = "pen" | "eraser" | "ellipse" | "rectangle";
+type Tool = "pen" | "eraser" | "ellipse" | "rectangle" | "text" | "move";
 export default function WhiteboardSVG() {
   const svgRef = useRef<SVGSVGElement>(null);
   const toolRef = useRef<Tool>("pen");
@@ -30,6 +30,14 @@ export default function WhiteboardSVG() {
   useEffect(() => {
     const svg = svgRef.current;
     let isDrawing = false;
+
+    let isDragging = false;
+    let selectedElement: SVGGraphicsElement | null = null;
+    let ox = 0;
+    let oy = 0;
+    let offX = 0;
+    let offY = 0;
+
     let currentPath: SVGPathElement | null = null;
     let points: { x: number; y: number }[] = [];
     let currentRect: SVGRectElement | null = null;
@@ -43,61 +51,111 @@ export default function WhiteboardSVG() {
     let lineWidth = lineWidthRef.current;
 
     const handleDown = (e: MouseEvent | TouchEvent) => {
-      isDrawing = true;
-      if (color !== colorRef.current) color = colorRef.current;
-      if (lineWidth !== lineWidthRef.current) lineWidth = lineWidthRef.current;
+      if (toolRef.current === "move") {
+        const { offsetX, offsetY } = getEventPosition(e);
 
-      const { offsetX, offsetY } = getEventPosition(e);
+        selectedElement = getElementAtPosition(offsetX, offsetY);
+        if (selectedElement) {
+          offX = offsetX;
+          offY = offsetY;
+          isDragging = true;
+          if (selectedElement instanceof SVGRectElement) {
+            ox = Number(selectedElement.getAttribute("x"));
+            oy = Number(selectedElement.getAttribute("y"));
+          } else if (selectedElement instanceof SVGEllipseElement) {
+            ox = Number(selectedElement.getAttribute("cx"));
+            oy = Number(selectedElement.getAttribute("cy"));
+          } else if (selectedElement instanceof SVGTextElement) {
+            ox = Number(selectedElement.getAttribute("x"));
+            oy = Number(selectedElement.getAttribute("y"));
+          } else if (selectedElement instanceof SVGPathElement) {
+            const pStr = selectedElement.getAttribute("d");
+            const pointsArr = (pStr?.substring(1) ?? "").split(" ");
+            points = pointsArr.map((p) => {
+              const [x, y] = p.split(",");
+              return { x: Number(x), y: Number(y) };
+            });
+          }
+        }
+      } else {
+        isDrawing = true;
+        if (color !== colorRef.current) color = colorRef.current;
+        if (lineWidth !== lineWidthRef.current)
+          lineWidth = lineWidthRef.current;
 
-      switch (toolRef.current) {
-        case "pen":
-          points = [{ x: offsetX, y: offsetY }];
-          startX = offsetX;
-          startY = offsetY;
-          currentPath = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "path"
-          );
-          currentPath.setAttribute("stroke", color);
-          currentPath.setAttribute("stroke-width", lineWidth.toString());
-          currentPath.setAttribute("fill", "none");
-          svg?.appendChild(currentPath);
-          break;
-        case "eraser":
-          svg?.querySelectorAll("path, rect, ellipse")?.forEach((path) => {
-            if (isNearPath(offsetX, offsetY, path as SVGElement)) {
-              svg?.removeChild(path);
+        const { offsetX, offsetY } = getEventPosition(e);
+
+        switch (toolRef.current) {
+          case "pen":
+            points = [{ x: offsetX, y: offsetY }];
+            startX = offsetX;
+            startY = offsetY;
+            currentPath = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "path"
+            );
+            currentPath.setAttribute("stroke", color);
+            currentPath.setAttribute("stroke-width", lineWidth.toString());
+            currentPath.setAttribute("fill", "none");
+            svg?.appendChild(currentPath);
+            break;
+          case "eraser":
+            svg
+              ?.querySelectorAll("path, rect, ellipse,text")
+              ?.forEach((path) => {
+                if (isNearPath(offsetX, offsetY, path as SVGElement)) {
+                  svg?.removeChild(path);
+                }
+              });
+            break;
+          case "rectangle":
+            startX = offsetX;
+            startY = offsetY;
+            currentRect = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "rect"
+            );
+            currentRect.setAttribute("stroke", color);
+            currentRect.setAttribute("stroke-width", lineWidth.toString());
+            currentRect.setAttribute("fill", "none");
+            currentRect.setAttribute("x", startX.toString());
+            currentRect.setAttribute("y", startY.toString());
+            svg?.appendChild(currentRect);
+            break;
+          case "ellipse":
+            startX = offsetX;
+            startY = offsetY;
+            currentEllipse = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "ellipse"
+            );
+            currentEllipse.setAttribute("stroke", color);
+            currentEllipse.setAttribute("stroke-width", lineWidth.toString());
+            currentEllipse.setAttribute("fill", "none");
+            currentEllipse.setAttribute("cx", startX.toString());
+            currentEllipse.setAttribute("cy", startY.toString());
+            svg?.appendChild(currentEllipse);
+            break;
+          case "text":
+            startX = offsetX;
+            startY = offsetY;
+            // eslint-disable-next-line no-case-declarations
+            const textContent = prompt("Enter text:");
+            if (textContent) {
+              const textElement = document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "text"
+              );
+              textElement.setAttribute("x", startX.toString());
+              textElement.setAttribute("y", startY.toString());
+              textElement.setAttribute("fill", color);
+              textElement.setAttribute("font-size", (lineWidth * 8).toString());
+              textElement.textContent = textContent;
+              svg?.appendChild(textElement);
             }
-          });
-          break;
-        case "rectangle":
-          startX = offsetX;
-          startY = offsetY;
-          currentRect = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "rect"
-          );
-          currentRect.setAttribute("stroke", color);
-          currentRect.setAttribute("stroke-width", lineWidth.toString());
-          currentRect.setAttribute("fill", "none");
-          currentRect.setAttribute("x", startX.toString());
-          currentRect.setAttribute("y", startY.toString());
-          svg?.appendChild(currentRect);
-          break;
-        case "ellipse":
-          startX = offsetX;
-          startY = offsetY;
-          currentEllipse = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "ellipse"
-          );
-          currentEllipse.setAttribute("stroke", color);
-          currentEllipse.setAttribute("stroke-width", lineWidth.toString());
-          currentEllipse.setAttribute("fill", "none");
-          currentEllipse.setAttribute("cx", startX.toString());
-          currentEllipse.setAttribute("cy", startY.toString());
-          svg?.appendChild(currentEllipse);
-          break;
+            isDrawing = false; // No need to continue drawing for text
+            break;
+        }
       }
     };
 
@@ -112,9 +170,11 @@ export default function WhiteboardSVG() {
       }
 
       isDrawing = false;
+      isDragging = false;
       currentPath = null;
       currentRect = null;
       currentEllipse = null;
+      selectedElement = null;
     };
 
     const handleMove = (e: MouseEvent | TouchEvent) => {
@@ -125,7 +185,6 @@ export default function WhiteboardSVG() {
         eraser = null;
       } else {
         if (!eraser) {
-          console.log("create eraser");
           eraser = document.createElementNS(
             "http://www.w3.org/2000/svg",
             "circle"
@@ -141,7 +200,29 @@ export default function WhiteboardSVG() {
         eraser.setAttribute("cy", offsetY.toString());
       }
 
-      if (!isDrawing) return;
+      if (!isDrawing && !isDragging) return;
+
+      if (isDragging && selectedElement) {
+        const dx = offsetX - offX;
+        const dy = offsetY - offY;
+
+        if (selectedElement instanceof SVGRectElement) {
+          selectedElement.setAttribute("x", (ox + dx).toString());
+          selectedElement.setAttribute("y", (oy + dy).toString());
+        } else if (selectedElement instanceof SVGEllipseElement) {
+          selectedElement.setAttribute("cx", (ox + dx).toString());
+          selectedElement.setAttribute("cy", (oy + dy).toString());
+        } else if (selectedElement instanceof SVGTextElement) {
+          selectedElement.setAttribute("x", (ox + dx).toString());
+          selectedElement.setAttribute("y", (oy + dy).toString());
+        } else if (selectedElement instanceof SVGPathElement) {
+          const d = `M${points
+            .map((p) => `${p.x + dx},${p.y + dy}`)
+            .join(" ")}`;
+          selectedElement.setAttribute("d", d);
+        }
+        return;
+      }
 
       switch (toolRef.current) {
         case "pen":
@@ -179,13 +260,28 @@ export default function WhiteboardSVG() {
           }
           break;
         case "eraser":
-          svg?.querySelectorAll("path, rect, ellipse")?.forEach((path) => {
-            if (isNearPath(offsetX, offsetY, path as SVGElement)) {
-              svg?.removeChild(path);
-            }
-          });
+          svg
+            ?.querySelectorAll("path, rect, ellipse, text")
+            ?.forEach((path) => {
+              if (isNearPath(offsetX, offsetY, path as SVGElement)) {
+                svg?.removeChild(path);
+              }
+            });
           break;
       }
+    };
+
+    const getElementAtPosition = (
+      x: number,
+      y: number
+    ): SVGGraphicsElement | null => {
+      const elements = svg?.querySelectorAll("path, rect, ellipse, text") || [];
+      for (const element of elements) {
+        if (isNearPath(x, y, element as SVGElement)) {
+          return element as SVGGraphicsElement;
+        }
+      }
+      return null;
     };
 
     const getEventPosition = (e: MouseEvent | TouchEvent) => {
@@ -212,6 +308,16 @@ export default function WhiteboardSVG() {
           if (Math.sqrt(dx * dx + dy * dy) < distanceThreshold) {
             return true;
           }
+        }
+      } else if (path instanceof SVGTextElement) {
+        const box = path.getBBox();
+        if (
+          x > box.x &&
+          x < box.x + box.width &&
+          y > box.y &&
+          y < box.y + box.height
+        ) {
+          return true;
         }
       } else if (path instanceof SVGRectElement) {
         const rectX = parseFloat(path.getAttribute("x") || "0");
@@ -304,46 +410,66 @@ export default function WhiteboardSVG() {
     >
       <Box>
         <Button
+          size="small"
           onClick={() => handleToolChange("pen")}
           variant={tool === "pen" ? "contained" : "outlined"}
         >
           Pen
         </Button>
         <Button
-          onClick={() => handleToolChange("eraser")}
-          variant={tool === "eraser" ? "contained" : "outlined"}
-        >
-          Eraser
-        </Button>
-        <Button
+          size="small"
           onClick={() => handleToolChange("ellipse")}
           variant={tool === "ellipse" ? "contained" : "outlined"}
         >
           Ellipse
         </Button>
         <Button
+          size="small"
           onClick={() => handleToolChange("rectangle")}
           variant={tool === "rectangle" ? "contained" : "outlined"}
         >
           Rectangle
         </Button>
-
+        <Button
+          size="small"
+          onClick={() => handleToolChange("text")}
+          variant={tool === "text" ? "contained" : "outlined"}
+        >
+          Text
+        </Button>
+        <Button
+          size="small"
+          onClick={() => handleToolChange("eraser")}
+          variant={tool === "eraser" ? "contained" : "outlined"}
+        >
+          Eraser
+        </Button>
+        <Button
+          size="small"
+          onClick={() => handleToolChange("move")}
+          variant={tool === "move" ? "contained" : "outlined"}
+        >
+          Move
+        </Button>
         <input
           type="color"
           value={color}
           onChange={(e) => handleColorChange(e.target.value)}
-          disabled={tool === "eraser"}
+          disabled={tool === "eraser" || tool === "move"}
         />
         <input
           type="number"
           step={1}
           min={1}
-          max={10}
+          max={15}
           value={lineWidth}
           onChange={(e) => handleLineWidthChange(Number(e.target.value))}
           style={{ width: "50px" }}
         />
-        <Button onClick={handleClear}>Clear</Button>
+
+        <Button size="small" onClick={handleClear}>
+          Clear
+        </Button>
       </Box>
       <svg
         ref={svgRef}

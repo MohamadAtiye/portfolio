@@ -8,5 +8,5 @@ whiteboard
 youtube player
 
 
-a soduko game
+a sudoku game
 game with camera control
