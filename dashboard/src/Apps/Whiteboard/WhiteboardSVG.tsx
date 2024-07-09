@@ -332,11 +332,11 @@ export default function WhiteboardSVG() {
 
     const isNearPath = (x: number, y: number, path: SVGElement) => {
       if (path instanceof SVGPathElement) {
-        const pathLength = path.getTotalLength();
+        const pathLength = path.getTotalLength() | 1;
         for (let i = 0; i < pathLength; i++) {
           const point = path.getPointAtLength(i);
-          const dx = (point.x - x) | 1;
-          const dy = (point.y - y) | 1;
+          const dx = point.x - x;
+          const dy = point.y - y;
           if (Math.sqrt(dx * dx + dy * dy) < distanceThreshold) {
             return true;
           }
