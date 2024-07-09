@@ -1,6 +1,13 @@
-import { Box, Button } from "@mui/material";
+import { Box, Button, Tooltip } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import simplify from "simplify-js";
+
+import SaveAltOutlinedIcon from "@mui/icons-material/SaveAltOutlined";
+import ModeIcon from "@mui/icons-material/Mode"; // Pen
+import CircleOutlinedIcon from "@mui/icons-material/CircleOutlined";
+import RectangleOutlinedIcon from "@mui/icons-material/RectangleOutlined";
+import TextFieldsIcon from "@mui/icons-material/TextFields";
+import OpenWithIcon from "@mui/icons-material/OpenWith"; // move icon
 
 type Tool = "pen" | "eraser" | "ellipse" | "rectangle" | "text" | "move";
 export default function WhiteboardSVG() {
@@ -402,6 +409,41 @@ export default function WhiteboardSVG() {
     }
   };
 
+  const exportSvg = () => {
+    const svgElement = svgRef.current;
+    if (!svgElement) return;
+
+    // Serialize SVG to string
+    const serializer = new XMLSerializer();
+    const svgString = serializer.serializeToString(svgElement);
+
+    // Create a data URL from the SVG string
+    const svgDataUrl = `data:image/svg+xml;base64,${btoa(svgString)}`;
+
+    // Create an image element
+    const image = new Image();
+    image.src = svgDataUrl;
+
+    image.onload = () => {
+      // Create a canvas and draw the image on it
+      const canvas = document.createElement("canvas");
+      canvas.width = svgElement.clientWidth;
+      canvas.height = svgElement.clientHeight;
+      const context = canvas.getContext("2d");
+      if (!context) return;
+      context.drawImage(image, 0, 0);
+
+      // Convert the canvas to a data URL
+      const pngDataUrl = canvas.toDataURL("image/png");
+
+      // Create a link element and download the image
+      const link = document.createElement("a");
+      link.href = pngDataUrl;
+      link.download = "image.png";
+      link.click();
+    };
+  };
+
   return (
     <Box
       sx={{
@@ -409,71 +451,98 @@ export default function WhiteboardSVG() {
       }}
     >
       <Box>
-        <Button
-          size="small"
-          onClick={() => handleToolChange("pen")}
-          variant={tool === "pen" ? "contained" : "outlined"}
-        >
-          Pen
-        </Button>
-        <Button
-          size="small"
-          onClick={() => handleToolChange("ellipse")}
-          variant={tool === "ellipse" ? "contained" : "outlined"}
-        >
-          Ellipse
-        </Button>
-        <Button
-          size="small"
-          onClick={() => handleToolChange("rectangle")}
-          variant={tool === "rectangle" ? "contained" : "outlined"}
-        >
-          Rectangle
-        </Button>
-        <Button
-          size="small"
-          onClick={() => handleToolChange("text")}
-          variant={tool === "text" ? "contained" : "outlined"}
-        >
-          Text
-        </Button>
-        <Button
-          size="small"
-          onClick={() => handleToolChange("eraser")}
-          variant={tool === "eraser" ? "contained" : "outlined"}
-        >
-          Eraser
-        </Button>
-        <Button
-          size="small"
-          onClick={() => handleToolChange("move")}
-          variant={tool === "move" ? "contained" : "outlined"}
-        >
-          Move
-        </Button>
-        <input
-          type="color"
-          value={color}
-          onChange={(e) => handleColorChange(e.target.value)}
-          disabled={tool === "eraser" || tool === "move"}
-        />
-        <input
-          type="number"
-          step={1}
-          min={1}
-          max={15}
-          value={lineWidth}
-          onChange={(e) => handleLineWidthChange(Number(e.target.value))}
-          style={{ width: "50px" }}
-        />
-
-        <Button size="small" onClick={handleClear}>
-          Clear
-        </Button>
+        <Tooltip title="Pen">
+          <Button
+            size="small"
+            onClick={() => handleToolChange("pen")}
+            variant={tool === "pen" ? "contained" : "outlined"}
+          >
+            <ModeIcon />
+          </Button>
+        </Tooltip>
+        <Tooltip title="Ellipse">
+          <Button
+            size="small"
+            onClick={() => handleToolChange("ellipse")}
+            variant={tool === "ellipse" ? "contained" : "outlined"}
+          >
+            <CircleOutlinedIcon />
+          </Button>
+        </Tooltip>
+        <Tooltip title="Rectangle">
+          <Button
+            size="small"
+            onClick={() => handleToolChange("rectangle")}
+            variant={tool === "rectangle" ? "contained" : "outlined"}
+          >
+            <RectangleOutlinedIcon />
+          </Button>
+        </Tooltip>
+        <Tooltip title="Text">
+          <Button
+            size="small"
+            onClick={() => handleToolChange("text")}
+            variant={tool === "text" ? "contained" : "outlined"}
+          >
+            <TextFieldsIcon />
+          </Button>
+        </Tooltip>
+        <Tooltip title="Move">
+          <Button
+            size="small"
+            onClick={() => handleToolChange("move")}
+            variant={tool === "move" ? "contained" : "outlined"}
+          >
+            <OpenWithIcon />
+          </Button>
+        </Tooltip>
+        <Tooltip title="Eraser">
+          <Button
+            size="small"
+            onClick={() => handleToolChange("eraser")}
+            variant={tool === "eraser" ? "contained" : "outlined"}
+          >
+            Eraser
+          </Button>
+        </Tooltip>
+        <Tooltip title="Select Color">
+          <input
+            type="color"
+            value={color}
+            onChange={(e) => handleColorChange(e.target.value)}
+            disabled={tool === "eraser" || tool === "move"}
+          />
+        </Tooltip>
+        <Tooltip title="Line Width">
+          <input
+            type="number"
+            step={1}
+            min={1}
+            max={15}
+            value={lineWidth}
+            onChange={(e) => handleLineWidthChange(Number(e.target.value))}
+            style={{ width: "50px" }}
+          />
+        </Tooltip>
+        <Tooltip title="Clear">
+          <Button variant="outlined" size="small" onClick={handleClear}>
+            Clear
+          </Button>
+        </Tooltip>
+        <Tooltip title="Save">
+          <Button variant="outlined" size="small" onClick={exportSvg}>
+            <SaveAltOutlinedIcon />
+          </Button>
+        </Tooltip>
       </Box>
       <svg
         ref={svgRef}
-        style={{ height: "100%", width: "100%", backgroundColor: "white" }}
+        style={{
+          height: "100%",
+          width: "100%",
+          backgroundColor: "white",
+          userSelect: "none",
+        }}
       />
     </Box>
   );
