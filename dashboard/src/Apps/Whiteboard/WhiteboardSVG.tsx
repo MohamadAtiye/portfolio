@@ -9,6 +9,7 @@ import RectangleOutlinedIcon from "@mui/icons-material/RectangleOutlined";
 import TextFieldsIcon from "@mui/icons-material/TextFields";
 import OpenWithIcon from "@mui/icons-material/OpenWith"; // move icon
 import ClearIcon from "@mui/icons-material/Clear";
+import RemoveCircleOutlineIcon from "@mui/icons-material/RemoveCircleOutline"; // eraser
 import FormatColorFillIcon from "@mui/icons-material/FormatColorFill"; // fill icon
 
 type Tool = "pen" | "eraser" | "ellipse" | "rectangle" | "text" | "move";
@@ -60,6 +61,8 @@ export default function WhiteboardSVG() {
     let lineWidth = lineWidthRef.current;
 
     const handleDown = (e: MouseEvent | TouchEvent) => {
+      e.preventDefault();
+
       if (toolRef.current === "move") {
         const { offsetX, offsetY } = getEventPosition(e);
 
@@ -210,6 +213,8 @@ export default function WhiteboardSVG() {
     };
 
     const handleMove = (e: MouseEvent | TouchEvent) => {
+      e.preventDefault();
+
       const { offsetX, offsetY } = getEventPosition(e);
 
       if (toolRef.current !== "eraser") {
@@ -534,7 +539,7 @@ export default function WhiteboardSVG() {
             onClick={() => handleToolChange("eraser")}
             variant={tool === "eraser" ? "contained" : "outlined"}
           >
-            Eraser
+            <RemoveCircleOutlineIcon />
           </Button>
         </Tooltip>
         <Tooltip title="Select Color">
