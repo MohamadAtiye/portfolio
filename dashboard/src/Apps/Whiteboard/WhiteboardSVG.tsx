@@ -96,7 +96,10 @@ export default function WhiteboardSVG() {
 
         switch (toolRef.current) {
           case "pen":
-            points = [{ x: offsetX, y: offsetY }];
+            points = [
+              { x: offsetX, y: offsetY },
+              { x: offsetX, y: offsetY },
+            ];
             startX = offsetX;
             startY = offsetY;
             currentPath = document.createElementNS(
@@ -107,7 +110,10 @@ export default function WhiteboardSVG() {
             currentPath.setAttribute("stroke-width", lineWidth.toString());
             currentPath.setAttribute("fill", fill ? color : "none");
             currentPath.setAttribute("stroke-linecap", "round");
-            
+            // eslint-disable-next-line no-case-declarations
+            const d = `M${points.map((p) => `${p.x},${p.y}`).join(" ")}`;
+            currentPath.setAttribute("d", d);
+
             svg?.appendChild(currentPath);
             break;
           case "eraser":
@@ -171,6 +177,7 @@ export default function WhiteboardSVG() {
     };
 
     const handleUp = () => {
+      // smooth the lines
       if (currentPath) {
         const tolerance = 2.5; // Adjust the tolerance as needed
         const highQuality = true; // High quality simplification
@@ -178,6 +185,20 @@ export default function WhiteboardSVG() {
 
         const d = `M${simplifiedPoints.map((p) => `${p.x},${p.y}`).join(" ")}`;
         currentPath.setAttribute("d", d);
+      }
+
+      // no empty rect
+      if (currentRect) {
+        const w = currentRect.getAttribute("width");
+        const h = currentRect.getAttribute("height");
+        if (!w || !h) currentRect.remove();
+      }
+
+      // no empty ellipse
+      if (currentEllipse) {
+        const rx = currentEllipse.getAttribute("rx");
+        const ry = currentEllipse.getAttribute("ry");
+        if (!rx || !ry) currentEllipse.remove();
       }
 
       isDrawing = false;
@@ -314,8 +335,8 @@ export default function WhiteboardSVG() {
         const pathLength = path.getTotalLength();
         for (let i = 0; i < pathLength; i++) {
           const point = path.getPointAtLength(i);
-          const dx = point.x - x;
-          const dy = point.y - y;
+          const dx = (point.x - x) | 1;
+          const dy = (point.y - y) | 1;
           if (Math.sqrt(dx * dx + dy * dy) < distanceThreshold) {
             return true;
           }
