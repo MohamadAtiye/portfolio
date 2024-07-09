@@ -5,6 +5,7 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import TimerOutlinedIcon from "@mui/icons-material/TimerOutlined";
 import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined";
 import CloseIcon from "@mui/icons-material/Close";
+import DrawIcon from "@mui/icons-material/Draw";
 import { ReactNode, useState } from "react";
 import { useDashboard } from "../hooks/useDashboard";
 import { APPS, APP_NAMES } from "../assets/constants";
@@ -117,6 +118,14 @@ export default function Header() {
             app={APP_NAMES.camera}
             onClick={() => {
               handleClickApp(APP_NAMES.camera);
+            }}
+            isScale={isScale}
+          />
+          <HeaderIcon
+            icon={<DrawIcon fontSize="large" />}
+            app={APP_NAMES.whiteboard}
+            onClick={() => {
+              handleClickApp(APP_NAMES.whiteboard);
             }}
             isScale={isScale}
           />

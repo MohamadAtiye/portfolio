@@ -1,8 +1,12 @@
 todo list + sync
 voice recorder + transcribe
 camera app with filters and AI
-a soduko game
 
+
+graphical calculator (inputs, middle, output)
 whiteboard
-game with camera control
 youtube player
+
+
+a soduko game
+game with camera control
