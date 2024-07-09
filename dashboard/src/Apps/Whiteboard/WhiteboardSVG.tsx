@@ -106,6 +106,8 @@ export default function WhiteboardSVG() {
             currentPath.setAttribute("stroke", color);
             currentPath.setAttribute("stroke-width", lineWidth.toString());
             currentPath.setAttribute("fill", fill ? color : "none");
+            currentPath.setAttribute("stroke-linecap", "round");
+            
             svg?.appendChild(currentPath);
             break;
           case "eraser":
@@ -519,7 +521,6 @@ export default function WhiteboardSVG() {
             type="color"
             value={color}
             onChange={(e) => handleColorChange(e.target.value)}
-            disabled={tool === "eraser" || tool === "move"}
           />
         </Tooltip>
 
