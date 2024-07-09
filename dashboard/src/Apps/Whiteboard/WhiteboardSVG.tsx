@@ -8,12 +8,18 @@ import CircleOutlinedIcon from "@mui/icons-material/CircleOutlined";
 import RectangleOutlinedIcon from "@mui/icons-material/RectangleOutlined";
 import TextFieldsIcon from "@mui/icons-material/TextFields";
 import OpenWithIcon from "@mui/icons-material/OpenWith"; // move icon
+import ClearIcon from "@mui/icons-material/Clear";
+import FormatColorFillIcon from "@mui/icons-material/FormatColorFill"; // fill icon
 
 type Tool = "pen" | "eraser" | "ellipse" | "rectangle" | "text" | "move";
 export default function WhiteboardSVG() {
   const svgRef = useRef<SVGSVGElement>(null);
-  const toolRef = useRef<Tool>("pen");
-  const [tool, setTool] = useState<Tool>("pen");
+
+  const fillRef = useRef(false);
+  const [fill, setFill] = useState(false);
+
+  const [lineWidth, setLineWidth] = useState(3);
+  const lineWidthRef = useRef(3);
 
   const [color, setColor] = useState("#000000");
   const colorRef = useRef("#000000");
@@ -22,13 +28,8 @@ export default function WhiteboardSVG() {
     colorRef.current = c;
   };
 
-  const [lineWidth, setLineWidth] = useState(3);
-  const lineWidthRef = useRef(3);
-  const handleLineWidthChange = (w: number) => {
-    setLineWidth(w);
-    lineWidthRef.current = w;
-  };
-
+  const toolRef = useRef<Tool>("pen");
+  const [tool, setTool] = useState<Tool>("pen");
   const handleToolChange = (selectedTool: Tool) => {
     setTool(selectedTool);
     toolRef.current = selectedTool;
@@ -54,6 +55,7 @@ export default function WhiteboardSVG() {
     let eraser: SVGCircleElement | null = null;
     const distanceThreshold = 10; // Distance threshold for erasing
 
+    let fill = fillRef.current;
     let color = colorRef.current;
     let lineWidth = lineWidthRef.current;
 
@@ -86,9 +88,9 @@ export default function WhiteboardSVG() {
         }
       } else {
         isDrawing = true;
-        if (color !== colorRef.current) color = colorRef.current;
-        if (lineWidth !== lineWidthRef.current)
-          lineWidth = lineWidthRef.current;
+        color = colorRef.current;
+        lineWidth = lineWidthRef.current;
+        fill = fillRef.current;
 
         const { offsetX, offsetY } = getEventPosition(e);
 
@@ -103,7 +105,7 @@ export default function WhiteboardSVG() {
             );
             currentPath.setAttribute("stroke", color);
             currentPath.setAttribute("stroke-width", lineWidth.toString());
-            currentPath.setAttribute("fill", "none");
+            currentPath.setAttribute("fill", fill ? color : "none");
             svg?.appendChild(currentPath);
             break;
           case "eraser":
@@ -124,7 +126,7 @@ export default function WhiteboardSVG() {
             );
             currentRect.setAttribute("stroke", color);
             currentRect.setAttribute("stroke-width", lineWidth.toString());
-            currentRect.setAttribute("fill", "none");
+            currentRect.setAttribute("fill", fill ? color : "none");
             currentRect.setAttribute("x", startX.toString());
             currentRect.setAttribute("y", startY.toString());
             svg?.appendChild(currentRect);
@@ -138,7 +140,7 @@ export default function WhiteboardSVG() {
             );
             currentEllipse.setAttribute("stroke", color);
             currentEllipse.setAttribute("stroke-width", lineWidth.toString());
-            currentEllipse.setAttribute("fill", "none");
+            currentEllipse.setAttribute("fill", fill ? color : "none");
             currentEllipse.setAttribute("cx", startX.toString());
             currentEllipse.setAttribute("cy", startY.toString());
             svg?.appendChild(currentEllipse);
@@ -450,7 +452,14 @@ export default function WhiteboardSVG() {
         height: "100%",
       }}
     >
-      <Box>
+      <Box
+        sx={{
+          display: "flex",
+          flexWrap: "wrap",
+          alignItems: "center",
+          background: "lightblue",
+        }}
+      >
         <Tooltip title="Pen">
           <Button
             size="small"
@@ -513,6 +522,20 @@ export default function WhiteboardSVG() {
             disabled={tool === "eraser" || tool === "move"}
           />
         </Tooltip>
+
+        <Tooltip title="Fill Shapes">
+          <Button
+            size="small"
+            onClick={() => {
+              setFill((p) => !p);
+              fillRef.current = !fillRef.current;
+            }}
+            variant={fill ? "contained" : "outlined"}
+          >
+            <FormatColorFillIcon />
+          </Button>
+        </Tooltip>
+
         <Tooltip title="Line Width">
           <input
             type="number"
@@ -520,13 +543,16 @@ export default function WhiteboardSVG() {
             min={1}
             max={15}
             value={lineWidth}
-            onChange={(e) => handleLineWidthChange(Number(e.target.value))}
+            onChange={(e) => {
+              setLineWidth(Number(e.target.value));
+              lineWidthRef.current = Number(e.target.value);
+            }}
             style={{ width: "50px" }}
           />
         </Tooltip>
         <Tooltip title="Clear">
           <Button variant="outlined" size="small" onClick={handleClear}>
-            Clear
+            <ClearIcon />
           </Button>
         </Tooltip>
         <Tooltip title="Save">
