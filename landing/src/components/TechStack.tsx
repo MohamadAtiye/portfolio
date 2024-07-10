@@ -22,7 +22,7 @@ const rotater = keyframes`
     z-index:4;
 }
 25% {
-    transform: scale(1) translateX(calc(-50vw + 100px)) translateY(-40px);
+    transform: scale(1) translateX(calc(-50vw + 70px)) translateY(-40px);
     z-index:3;
 }
 26% {
@@ -34,11 +34,11 @@ const rotater = keyframes`
     z-index:1;
 }
 74% {
-    // transform: scale(0.8) translateX(calc(50vw - 100px)) translateY(-80px);
+    // transform: scale(0.8) translateX(calc(50vw - 70px)) translateY(-80px);
     z-index:2;
 }
 75% {
-    transform: scale(1) translateX(calc(50vw - 100px)) translateY(-40px);
+    transform: scale(1) translateX(calc(50vw - 70px)) translateY(-40px);
     z-index:3;
 }
 100% {

@@ -59,7 +59,7 @@ export default function Header() {
               textDecoration: "none",
             }}
           >
-            M Atiye
+            Atiye
           </Typography>
 
           {/* MOBILE NAV MENU */}

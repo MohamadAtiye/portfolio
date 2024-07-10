@@ -19,8 +19,6 @@ export default function Footer() {
               align="center"
               variant="h6"
               noWrap
-              component="a"
-              href="/"
               sx={{
                 fontFamily: "monospace",
                 fontWeight: 700,
@@ -29,7 +27,20 @@ export default function Footer() {
                 textDecoration: "none",
               }}
             >
-              M Atiye
+              Mohamad Mehdi Atiye
+            </Typography>
+            <Typography
+              align="center"
+              noWrap
+              component="a"
+              href="mailto:mohamad.atiye@hotmail.com"
+              sx={{
+                fontWeight: 700,
+                color: "inherit",
+                textDecoration: "none",
+              }}
+            >
+              mohamad.atiye@hotmail.com
             </Typography>
           </Box>
         </Toolbar>
