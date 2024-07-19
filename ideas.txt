@@ -1,12 +1,11 @@
 todo list + sync
 voice recorder + transcribe
 camera app with filters and AI
+whiteboard
 
 
 graphical calculator (inputs, middle, output)
-whiteboard
-youtube player
-
+image/video editor
 
 a sudoku game
 game with camera control

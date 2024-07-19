@@ -14,12 +14,11 @@ export default function Recorder() {
         overflow: "hidden",
       }}
     >
+      TODO: FIX AUDIO FEEDBACK WHEN RECORDING. <br />
+      TODO : add transcribe
       <AudioRecorder />
       <VisualiserVisualiser />
       <AudioPlayer />
     </Box>
   );
 }
-
-
-// TODO : add transcribe

@@ -11,6 +11,7 @@ import { APP_NAMES } from "./assets/constants";
 import StopWatch from "./Apps/StopWatch/StopWatch";
 import Camera from "./Apps/Camera/Camera";
 import WhiteboardSVG from "./Apps/Whiteboard/WhiteboardSVG";
+import Calculator from "./Apps/Calculator/Calculator";
 
 function App() {
   const { activeApp } = useDashboard();
@@ -43,6 +44,7 @@ function App() {
           {activeApp === "stopwatch" && <StopWatch />}
           {activeApp === "camera" && <Camera />}
           {activeApp === "whiteboard" && <WhiteboardSVG />}
+          {activeApp === "calculator" && <Calculator />}
         </PagePaper>
       )}
     </Box>

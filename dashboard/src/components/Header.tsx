@@ -6,6 +6,8 @@ import TimerOutlinedIcon from "@mui/icons-material/TimerOutlined";
 import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 import DrawIcon from "@mui/icons-material/Draw";
+import CalculateOutlinedIcon from "@mui/icons-material/CalculateOutlined";
+
 import { ReactNode, useState } from "react";
 import { useDashboard } from "../hooks/useDashboard";
 import { APPS, APP_NAMES } from "../assets/constants";
@@ -126,6 +128,14 @@ export default function Header() {
             app={APP_NAMES.whiteboard}
             onClick={() => {
               handleClickApp(APP_NAMES.whiteboard);
+            }}
+            isScale={isScale}
+          />
+          <HeaderIcon
+            icon={<CalculateOutlinedIcon fontSize="large" />}
+            app={APP_NAMES.calculator}
+            onClick={() => {
+              handleClickApp(APP_NAMES.calculator);
             }}
             isScale={isScale}
           />

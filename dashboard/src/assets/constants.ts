@@ -6,6 +6,7 @@ export enum APP_NAMES {
   stopwatch = "stopwatch",
   camera = "camera",
   whiteboard = "whiteboard",
+  calculator = "calculator",
 }
 
 export const APPS: Record<APP_NAMES, { text: string }> = {
@@ -29,5 +30,8 @@ export const APPS: Record<APP_NAMES, { text: string }> = {
   },
   whiteboard: {
     text: "Whiteboard",
+  },
+  calculator: {
+    text: "Calculator",
   },
 };
