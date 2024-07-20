@@ -129,7 +129,6 @@ export default function NormalCalculator() {
     if (value === "C") return handleClear();
 
     // handle equal
-    // TODO add history on equal click
     if (value === "=") {
       return handleCalculate(input, true);
     }
@@ -153,14 +152,15 @@ export default function NormalCalculator() {
       if (isForced) {
         setHistory((p) => [[uuidv4(), value, evalResult], ...p]);
       }
-      // if (!isNaN(evalResult)) setInput(`${evalResult}`);
     } catch {
       setResult("Error");
     }
   };
 
   const handleErase = () => {
-    setInput((p) => p.substring(0, p.length - 1));
+    const newInput = input.substring(0, input.length - 1);
+    handleCalculate(newInput);
+    setInput(newInput);
   };
 
   return (

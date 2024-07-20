@@ -12,7 +12,7 @@ const Calculator: React.FC = () => {
         overflow: "hidden",
       }}
     >
-      TODO: add +/- , () , mem  function, 
+      TODO: handle Percent % 
       <Box sx={{ flex: 1, overflow: "hidden" }}>
         {/* normal calculator */}
         <NormalCalculator />
