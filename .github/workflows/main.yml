@@ -4,16 +4,10 @@ on:
   push:
     branches:
       - main
-    paths:
-      - "landing/**"
-      - "dashboard/**"
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        project: [landing, dashboard]
 
     steps:
       - name: Checkout code
@@ -24,17 +18,41 @@ jobs:
         with:
           node-version: "16"
 
-      - name: Install and build ${{ matrix.project }}
+      - name: Determine changed files
+        id: changes
+        run: |
+          echo "CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }})" >> $GITHUB_ENV
+
+      - name: Instal and Build landing
+        if: contains(env.CHANGED_FILES, 'landing/')
         run: |
           npm install
           npm run build
-        working-directory: ./${{ matrix.project }}
+        working-directory: ./landing
 
-      - name: Deploy ${{ matrix.project }} via FTP
+      - name: Deploy landing via FTP
+        if: contains(env.CHANGED_FILES, 'landing/')
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./${{ matrix.project }}/dist/
-          server-dir: ${{ matrix.project == 'landing' && '/' || '/dashboard/' }}
+          local-dir: ./landing/dist/
+          server-dir: /
+
+      - name: Instal and Build dashboard
+        if: contains(env.CHANGED_FILES, 'dashboard/')
+        run: |
+          npm install
+          npm run build
+        working-directory: ./dashboard
+
+      - name: Deploy dashboard via FTP
+        if: contains(env.CHANGED_FILES, 'dashboard/')
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dashboard/dist/
+          server-dir: /dashboard/
