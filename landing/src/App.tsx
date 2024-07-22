@@ -12,7 +12,9 @@ import { REG_URL } from "./assets/strings";
 function App() {
   useEffect(() => {
     fetch(REG_URL)
-      .then(() => console.log("reg done v2"))
+      .then(() => {
+        // do nothing
+      })
       .catch(() => {
         //do nothing
       });
