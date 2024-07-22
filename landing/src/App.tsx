@@ -14,6 +14,7 @@ function App() {
     fetch(REG_URL)
       .then(() => {
         // do nothing
+        console.log("ok")
       })
       .catch(() => {
         //do nothing
