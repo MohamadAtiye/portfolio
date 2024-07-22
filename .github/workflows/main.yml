@@ -4,10 +4,16 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "landing/**"
+      - "dashboard/**"
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: [landing, dashboard]
 
     steps:
       - name: Checkout code
@@ -18,32 +24,17 @@ jobs:
         with:
           node-version: "16"
 
-      - name: install and build landing
+      - name: Install and build ${{ matrix.project }}
         run: |
           npm install
           npm run build
-        working-directory: ./landing
+        working-directory: ./${{ matrix.project }}
 
-      - name: Deploy landing via FTP
+      - name: Deploy ${{ matrix.project }} via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./landing/dist/
-          server-dir: /
-
-      - name: install and build dashboard
-        run: |
-          npm install
-          npm run build
-        working-directory: ./dashboard
-
-      - name: Deploy dashboard via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./dashboard/dist/
-          server-dir: /dashboard/
+          local-dir: ./${{ matrix.project }}/dist/
+          server-dir: ${{ matrix.project == 'landing' && '/' || '/dashboard/' }}
