@@ -20,7 +20,6 @@ jobs:
 
       - name: Build and deploy landing
         run: |
-          cd ./landing/
           npm install
           npm run build
         working-directory: ./landing
@@ -36,7 +35,6 @@ jobs:
 
       - name: Build and deploy dashboard
         run: |
-          cd ./dashboard/
           npm install
           npm run build
         working-directory: ./dashboard
