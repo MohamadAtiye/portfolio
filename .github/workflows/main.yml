@@ -14,27 +14,27 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - name: Determine changed paths
-        id: determine_changes
-        run: |
-          echo "changed_paths=$(git diff --name-only ${{ github.sha }})" >> $GITHUB_ENV
+      # - name: Determine changed paths
+      #   id: determine_changes
+      #   run: |
+      #     echo "changed_paths=$(git diff --name-only ${{ github.sha }})" >> $GITHUB_ENV
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: "16"
+          node-version: "20"
 
       - name: Install and build ${{ matrix.project }}
-        if: ${{ contains(steps.determine_changes.outputs.changed_paths, matrix.project) }}
+        # if: ${{ contains(steps.determine_changes.outputs.changed_paths, matrix.project) }}
         run: |
           npm install
           npm run build
         working-directory: ./${{ matrix.project }}
 
       - name: Deploy ${{ matrix.project }} via FTP
-        if: ${{ contains(steps.determine_changes.outputs.changed_paths, matrix.project) }}
+        # if: ${{ contains(steps.determine_changes.outputs.changed_paths, matrix.project) }}
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
