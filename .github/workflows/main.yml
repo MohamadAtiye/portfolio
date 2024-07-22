@@ -19,7 +19,7 @@ jobs:
           node-version: '16'
         
       - name: cd to landing
-        run: cd .\landing\
+        run: cd ./landing/
 
       - name: Install dependencies
         run: npm install
