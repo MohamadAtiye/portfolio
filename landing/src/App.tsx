@@ -6,8 +6,16 @@ import Profile from "./components/Profile";
 import Footer from "./components/Footer";
 import ContactForm from "./components/ContactForm";
 import TechStack from "./components/TechStack";
+import { useEffect } from "react";
+import { REG_URL } from "./assets/strings";
 
 function App() {
+  useEffect(() => {
+    fetch(REG_URL).catch(() => {
+      //do nothing
+    });
+  }, []);
+
   return (
     <>
       <Header />

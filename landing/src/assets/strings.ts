@@ -9,3 +9,4 @@ export const STRINGS = {
 export const URL_DASHBOARD = "/dashboard";
 
 export const CONTACT_URL = "/contact.php";
+export const REG_URL = "/reg.php";
