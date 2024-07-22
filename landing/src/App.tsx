@@ -11,9 +11,11 @@ import { REG_URL } from "./assets/strings";
 
 function App() {
   useEffect(() => {
-    fetch(REG_URL).catch(() => {
-      //do nothing
-    });
+    fetch(REG_URL)
+      .then(() => console.log("reg done"))
+      .catch(() => {
+        //do nothing
+      });
   }, []);
 
   return (
