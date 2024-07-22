@@ -18,22 +18,34 @@ jobs:
         with:
           node-version: "16"
 
-      - name: Change directory to landing
-        run: cd ./landing/
-
-      - name: Install dependencies
-        run: npm install
+      - name: Build and deploy landing
+        run: |
+          cd ./landing/
+          npm install
+          npm run build
         working-directory: ./landing
 
-      - name: Build project
-        run: npm run build
-        working-directory: ./landing
-
-      - name: Deploy via FTP
+      - name: Deploy landing via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_SERVER }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./landing/dist/
-          server-dir: /test/
+          server-dir: /
+
+      - name: Build and deploy dashboard
+        run: |
+          cd ./dashboard/
+          npm install
+          npm run build
+        working-directory: ./dashboard
+
+      - name: Deploy dashboard via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dashboard/dist/
+          server-dir: /dashboard
