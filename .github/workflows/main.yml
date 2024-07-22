@@ -16,16 +16,18 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16'
-        
-      - name: cd to landing
+          node-version: "16"
+
+      - name: Change directory to landing
         run: cd ./landing/
 
       - name: Install dependencies
         run: npm install
+        working-directory: ./landing
 
       - name: Build project
         run: npm run build
+        working-directory: ./landing
 
       - name: Deploy via FTP
         env:
@@ -35,3 +37,4 @@ jobs:
         run: |
           sudo apt-get install -y lftp
           lftp -c "open -u $FTP_USERNAME,$FTP_PASSWORD $FTP_SERVER; mirror -R ./dist /test"
+        working-directory: ./landing
