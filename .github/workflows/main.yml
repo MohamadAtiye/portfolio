@@ -17,12 +17,12 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: '16'
-
-      - name: Install dependencies
-        run: npm install
         
       - name: cd to landing
         run: cd .\landing\
+
+      - name: Install dependencies
+        run: npm install
 
       - name: Build project
         run: npm run build
