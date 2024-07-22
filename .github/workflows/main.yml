@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: "16"
 
-      - name: Build and deploy landing
+      - name: install and build landing
         run: |
           npm install
           npm run build
@@ -33,7 +33,7 @@ jobs:
           local-dir: ./landing/dist/
           server-dir: /
 
-      - name: Build and deploy dashboard
+      - name: install and build dashboard
         run: |
           npm install
           npm run build
@@ -46,4 +46,4 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./dashboard/dist/
-          server-dir: /dashboard
+          server-dir: /dashboard/
