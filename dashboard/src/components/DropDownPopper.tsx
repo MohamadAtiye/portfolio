@@ -1,4 +1,4 @@
-import { Box, IconButton, Paper, Popover } from "@mui/material";
+import { IconButton, Paper, Popover } from "@mui/material";
 import React, { ReactNode, useState } from "react";
 
 interface DropDownPopperProps {
@@ -42,10 +42,8 @@ export default function DropDownPopper({
           horizontal: "left",
         }}
       >
-        <Paper sx={{ zIndex: 9999 }}>
-          <Box p={2} width={200}>
-            {children}
-          </Box>
+        <Paper sx={{ zIndex: 9999, padding: 2, width: "300px" }}>
+          {children}
         </Paper>
       </Popover>
     </div>
