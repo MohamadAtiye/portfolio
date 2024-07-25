@@ -25,9 +25,9 @@ export default function GlBackgroundManager() {
 
   const [blobOptions, setBlobOptions] = useState({
     blobsColor: "#FFFFFF",
-    blobsSize: 5,
+    blobsSize: 3,
     blobsSpeed: 2,
-    blobsCount: 5,
+    blobsCount: 10,
   });
 
   return (
@@ -133,7 +133,7 @@ export default function GlBackgroundManager() {
                     aria-labelledby="blobsCount-label"
                     step={1}
                     min={1}
-                    max={10}
+                    max={20}
                   />
                 </Box>
               </Box>

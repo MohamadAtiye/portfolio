@@ -7,10 +7,11 @@ void main() {
 }
 `;
 
+const MAX_BLOBS = 20;
 const fragmentShaderSource = `#version 300 es
 precision highp float;
 
-uniform float u_dataPoints[100]; // Adjust size as necessary
+uniform float u_dataPoints[${MAX_BLOBS * 5}]; // Adjust size as necessary
 uniform vec2 u_resolution;
 
 uniform int u_count;
@@ -25,22 +26,22 @@ uniform vec4 u_color;
 out vec4 outColor;
 
 void main() {
-    // normalize to -1, 1
-    vec2 uv = (gl_FragCoord.xy / vec2(u_resolution[0], u_resolution[1])) * 2.0 - 1.0;
-
+    vec2 r_xy = gl_FragCoord.xy;
+    float g_blob_size = min(u_resolution[0], u_resolution[1]) * 0.5;
+    
     float value = 0.0;
-
     for (int i = 0; i < u_count*5; i+=5){
-        float cx = u_dataPoints[i];
-        float cy = u_dataPoints[i + 1];
-        float pathRadius = u_dataPoints[i + 2];
+        float cx = (u_dataPoints[i] + 1.0) *0.5 * u_resolution[0];
+        float cy = (u_dataPoints[i + 1] + 1.0) * 0.5 * u_resolution[1];
+
+        float pathRadius = u_dataPoints[i + 2] * g_blob_size;
         float speed = u_dataPoints[i + 3];
-        float radius = u_dataPoints[i + 4] * u_size;
+        float radius = u_dataPoints[i + 4] * u_size * g_blob_size;
 
         float x = cx + sin(u_time * u_speed * speed * 0.1) * pathRadius;
         float y = cy + cos(u_time * u_speed * speed * 0.1) * pathRadius;
         vec2 center = vec2(x,y);
-        float dist = length(uv - center);
+        float dist = length(r_xy - center);
         value += radius / dist;
     }
 
