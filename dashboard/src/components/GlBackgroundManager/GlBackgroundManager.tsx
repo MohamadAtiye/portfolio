@@ -12,11 +12,12 @@ import DropDownPopper from "../DropDownPopper";
 import SettingsIcon from "@mui/icons-material/Settings";
 import BgClear from "./backgrounds/BgClear";
 import BgBlobs from "./backgrounds/BgBlobs";
+// import BgSnowyDay from "./backgrounds/BgSnowyDay";
 
 enum BACKGROUNDS {
   color = "color",
   blobs = "blobs",
-  snowyDay = "snowyDay",
+  // snowyDay = "snowyDay",
 }
 
 export default function GlBackgroundManager() {
@@ -24,8 +25,8 @@ export default function GlBackgroundManager() {
   const [bgColor, setBgColor] = useState("#9accff");
 
   const [blobOptions, setBlobOptions] = useState({
-    blobsColor: "#FFFFFF",
-    blobsSize: 3,
+    blobsColor: "#BB00FF",
+    blobsSize: 20,
     blobsSpeed: 2,
     blobsCount: 10,
   });
@@ -103,7 +104,7 @@ export default function GlBackgroundManager() {
                     aria-labelledby="blobsSize-label"
                     step={1}
                     min={1}
-                    max={10}
+                    max={100}
                   />
                   {/* BLOB Speed */}
                   <InputLabel id="blobsSpeed-label">Blobs Speed</InputLabel>
@@ -152,6 +153,7 @@ export default function GlBackgroundManager() {
           blobsCount={blobOptions.blobsCount}
         />
       )}
+      {/* {selectedBG === BACKGROUNDS.snowyDay && <BgSnowyDay />} */}
     </>
   );
 }
