@@ -11,6 +11,7 @@ import Camera from "./Apps/Camera/Camera";
 import WhiteboardSVG from "./Apps/Whiteboard/WhiteboardSVG";
 import Calculator from "./Apps/Calculator/Calculator";
 import GlBackgroundManager from "./components/GlBackgroundManager/GlBackgroundManager";
+import ChatApp from "./Apps/ChatApp/ChatApp";
 
 function App() {
   const { activeApp } = useDashboard();
@@ -41,6 +42,7 @@ function App() {
           {activeApp === "camera" && <Camera />}
           {activeApp === "whiteboard" && <WhiteboardSVG />}
           {activeApp === "calculator" && <Calculator />}
+          {activeApp === "chat" && <ChatApp />}
         </PagePaper>
       )}
     </Box>

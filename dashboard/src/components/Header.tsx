@@ -7,6 +7,7 @@ import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined";
 import CloseIcon from "@mui/icons-material/Close";
 import DrawIcon from "@mui/icons-material/Draw";
 import CalculateOutlinedIcon from "@mui/icons-material/CalculateOutlined";
+import ChatOutlinedIcon from "@mui/icons-material/ChatOutlined";
 
 import { ReactNode, useState } from "react";
 import { useDashboard } from "../hooks/useDashboard";
@@ -78,6 +79,7 @@ export default function Header() {
         gap: isScale ? 4 : 1,
         flexWrap: "wrap",
         position: "relative",
+        zIndex: 99999,
       }}
       component={Paper}
     >
@@ -88,6 +90,14 @@ export default function Header() {
             app={APP_NAMES.todo}
             onClick={() => {
               handleClickApp(APP_NAMES.todo);
+            }}
+            isScale={isScale}
+          />
+          <HeaderIcon
+            icon={<ChatOutlinedIcon fontSize="large" />}
+            app={APP_NAMES.chat}
+            onClick={() => {
+              handleClickApp(APP_NAMES.chat);
             }}
             isScale={isScale}
           />

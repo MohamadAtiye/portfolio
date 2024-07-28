@@ -3,7 +3,6 @@ voice recorder + transcribe
 camera app with filters and AI
 whiteboard
 
-
 graphical calculator (inputs, middle, output)
 image/video editor
 
