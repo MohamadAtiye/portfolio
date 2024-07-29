@@ -68,9 +68,8 @@ const TechStack: React.FC = () => {
   const [scale, setScale] = useState(1); // Initial scale value, adjust as needed
 
   useEffect(() => {
-    // Function to update scale based on window resize
     const updateScale = () => {
-      const bodySize = document.body.clientWidth; // Get current body size
+      const bodySize = document.body.clientWidth;
       const minBodySize = 400;
       const maxBodySize = 1000;
 
@@ -78,23 +77,17 @@ const TechStack: React.FC = () => {
         0.5 + ((bodySize - minBodySize) / (maxBodySize - minBodySize)) * 0.5;
       newScale = Math.max(0.4, Math.min(1, newScale)); // Ensure scale stays within 0.5 to 1
 
-      setScale(newScale); // Update the state with the new scale value
+      setScale(newScale);
     };
-
-    // Add event listener for window resize
     window.addEventListener("resize", updateScale);
-
-    // Initial call to set scale based on current window size
     updateScale();
-
-    // Clean up event listener on component unmount
     return () => {
       window.removeEventListener("resize", updateScale);
     };
-  }, []); // Empty dependency array ensures this effect runs only once on mount
+  }, []);
 
   return (
-    <Box>
+    <Box id="anchor-tech-stack" paddingTop="70px">
       <Typography variant="h4" align="center" gutterBottom>
         Tech Stack
       </Typography>

@@ -2,7 +2,10 @@ import { AppBar, Box, Container, Toolbar, Typography } from "@mui/material";
 
 export default function Footer() {
   return (
-    <AppBar position="static" sx={{ bgcolor: "black", p: 1 }}>
+    <AppBar
+      position="static"
+      sx={{ bgcolor: "black", p: 1, marginTop: "70px" }}
+    >
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           <Box

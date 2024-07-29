@@ -66,9 +66,14 @@ const ContactForm: React.FC = () => {
   };
 
   return (
-    <Box component="form" onSubmit={handleSubmit}>
-      <Typography id="anchor-Contact" variant="h4" align="center" gutterBottom>
-        Get in touch
+    <Box
+      component="form"
+      onSubmit={handleSubmit}
+      id="anchor-Contact"
+      paddingTop="70px"
+    >
+      <Typography variant="h4" align="center" gutterBottom>
+        Contact Me
       </Typography>
       <Paper
         sx={{
@@ -80,7 +85,7 @@ const ContactForm: React.FC = () => {
           padding: 3,
           borderRadius: 1,
           position: "relative",
-          height: "380px",
+          height: "400px",
         }}
         elevation={3}
       >
@@ -103,6 +108,7 @@ const ContactForm: React.FC = () => {
           </Box>
         ) : (
           <>
+            <Typography align="center">Get in touch</Typography>
             <TextField
               label="Name"
               name="name"

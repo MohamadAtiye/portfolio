@@ -14,7 +14,7 @@ function App() {
     fetch(REG_URL)
       .then(() => {
         // do nothing
-        console.log("ok")
+        console.log("ok");
       })
       .catch(() => {
         //do nothing
@@ -29,8 +29,7 @@ function App() {
         sx={{
           display: "flex",
           flexDirection: "column",
-          gap: 3,
-          padding: "16px",
+          padding: "0 16px",
         }}
       >
         <Profile />

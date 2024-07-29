@@ -144,7 +144,7 @@ const AnimatedBox = styled(Box)<AnimatedBoxProps>(({ delay, sx, count }) => ({
 
 export default function Journey() {
   return (
-    <Box>
+    <Box paddingTop="70px" id="anchor-My-Journey">
       <Typography variant="h4" align="center" gutterBottom>
         My Journey
       </Typography>

@@ -12,11 +12,13 @@ import Tooltip from "@mui/material/Tooltip";
 import MenuItem from "@mui/material/MenuItem";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
-import { Divider } from "@mui/material";
+import { Divider, Link } from "@mui/material";
 import { STRINGS, URL_DASHBOARD } from "../assets/strings";
 
 const pages = [
   { text: "About me", anchorId: "anchor-About-me" },
+  { text: "My Journey", anchorId: "anchor-My-Journey" },
+  { text: "Tech Stack", anchorId: "anchor-tech-stack" },
   { text: "Contact", anchorId: "anchor-Contact" },
 ];
 
@@ -33,14 +35,8 @@ export default function Header() {
     setAnchorElNav(null);
   };
 
-  const handleMenuClick = (anchorId: string) => {
-    handleCloseNavMenu();
-    const element = document.getElementById(anchorId);
-    if (element) element.scrollIntoView({ behavior: "smooth" });
-  };
-
   return (
-    <AppBar position="static" sx={{ bgcolor: "black" }}>
+    <AppBar position="sticky" sx={{ bgcolor: "black" }}>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           {/* LOGO */}
@@ -117,13 +113,23 @@ export default function Header() {
 
               {/* PAGES */}
               {pages.map((page) => (
-                <MenuItem
-                  key={page.text}
-                  onClick={() => handleMenuClick(page.anchorId)}
-                >
-                  <Typography width={"100%"} textAlign="center" fontSize={18}>
-                    {page.text}
-                  </Typography>
+                <MenuItem key={page.text}>
+                  <Link
+                    role="menuitem"
+                    href={`#${page.anchorId}`}
+                    onClick={handleCloseNavMenu}
+                    sx={{
+                      width: "100%",
+                      textDecoration: "none",
+                      textAlign: "center",
+                      color: "inherit",
+                      display: "block",
+                    }}
+                  >
+                    <Typography width={"100%"} textAlign="center" fontSize={18}>
+                      {page.text}
+                    </Typography>
+                  </Link>
                 </MenuItem>
               ))}
 
@@ -163,7 +169,7 @@ export default function Header() {
           >
             <Button
               onClick={handleCloseNavMenu}
-              sx={{ my: 2, color: "white", display: "block", mx: 2 }}
+              sx={{ my: 2, color: "white", display: "block", mx: 1 }}
               href={URL_DASHBOARD}
               target="_blank"
             >
@@ -173,9 +179,9 @@ export default function Header() {
             {/* PAGES */}
             {pages.map((page) => (
               <Button
+                href={`#${page.anchorId}`}
                 key={page.text}
-                onClick={() => handleMenuClick(page.anchorId)}
-                sx={{ my: 2, color: "white", display: "block", mx: 2 }}
+                sx={{ my: 2, color: "white", display: "block", mx: 1 }}
               >
                 {page.text}
               </Button>

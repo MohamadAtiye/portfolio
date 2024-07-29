@@ -74,7 +74,7 @@ export default function Hero() {
       sx={{
         margin: 0,
         padding: 0,
-        height: { xs: "300px", md: "600px" },
+        height: { xs: "300px", sm: "450px", md: "600px" },
         background: "linear-gradient(to right,white, white, black,black)",
       }}
       elevation={3}

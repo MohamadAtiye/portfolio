@@ -2,8 +2,8 @@ import { Box, Typography } from "@mui/material";
 
 export default function Profile() {
   return (
-    <Box>
-      <Typography id="anchor-About-me" variant="h4" align="center" gutterBottom>
+    <Box id="anchor-About-me" paddingTop="70px">
+      <Typography variant="h4" align="center" gutterBottom>
         About me
       </Typography>
       <Typography fontSize={"1.5rem"}>MOHAMAD MEHDI ATIYE</Typography>
