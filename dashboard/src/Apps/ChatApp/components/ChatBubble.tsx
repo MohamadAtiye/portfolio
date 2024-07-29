@@ -11,7 +11,7 @@ function formatTimestamp(unixTS: number): string {
   const elapsedSeconds = now - unixTS;
   if (elapsedSeconds < 60) {
     return `${elapsedSeconds} seconds ago`;
-  } else if (elapsedSeconds < 300) {
+  } else if (elapsedSeconds < 60 * 30) {
     const minutes = Math.floor(elapsedSeconds / 60);
     return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
   } else {
