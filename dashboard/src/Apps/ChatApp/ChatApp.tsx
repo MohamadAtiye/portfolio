@@ -15,6 +15,7 @@ const ChatApp = () => {
           gap: 1,
         }}
       >
+        TODO: change 2s interval to get messages to a long poll
         <ChatHead />
         <ChatMessagesArea />
         <ChatInputBox />

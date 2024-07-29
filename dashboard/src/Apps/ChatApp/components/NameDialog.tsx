@@ -10,6 +10,7 @@ import {
   Box,
 } from "@mui/material";
 import styled from "@emotion/styled";
+import { MAX_NAME_LENGTH, MIN_NAME_LENGTH } from "../helpers/DataContext";
 
 const StyledBackdrop = styled(Backdrop)`
   z-index: 1;
@@ -34,6 +35,7 @@ export default function NameDialog({ onSubmit }: NameDialogProps) {
           <DialogTitle>Enter your name</DialogTitle>
           <DialogContent>
             <TextField
+              sx={{ minWidth: "250px" }}
               autoFocus
               margin="dense"
               label="Your Name"
@@ -44,6 +46,11 @@ export default function NameDialog({ onSubmit }: NameDialogProps) {
               onChange={(e) => setName(e.target.value)}
               autoComplete="off"
               required
+              inputProps={{
+                maxLength: MAX_NAME_LENGTH,
+                minLength: MIN_NAME_LENGTH,
+              }}
+              helperText={`Between ${MIN_NAME_LENGTH} and ${MAX_NAME_LENGTH} characters`}
             />
           </DialogContent>
           <DialogActions>

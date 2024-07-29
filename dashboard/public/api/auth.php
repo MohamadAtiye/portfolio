@@ -3,6 +3,8 @@
 require_once "JWTHandler.php";
 
 $handler = new JWTHandler();
+$MAX_NAME_LENGTH = 30;
+$MIN_NAME_LENGTH = 5;
 
 // Set CORS headers
 header('Access-Control-Allow-Origin: *');
@@ -36,8 +38,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         switch ($input['action']) {
             case 'create':
                 if (isset($input['user_name'])) {
-                    $userId = generateUserId();
                     $userName = $input['user_name'];
+                    $userName = trim($userName);
+                    $userName = htmlspecialchars($userName, ENT_QUOTES, 'UTF-8');
+                    if (mb_strlen($userName) > $MAX_NAME_LENGTH || mb_strlen($userName) < $MIN_NAME_LENGTH) {
+                        http_response_code(400);
+                        echo json_encode(['error' => 'Name length error']);
+                        return;
+                    }
+
+                    $userId = generateUserId();
                     $token = $handler->generateToken($userId, $userName);
                     $refreshToken = $handler->generateRefreshToken($userId, $userName);
                     echo json_encode([
