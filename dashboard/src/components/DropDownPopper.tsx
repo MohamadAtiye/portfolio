@@ -41,10 +41,9 @@ export default function DropDownPopper({
           vertical: "bottom",
           horizontal: "left",
         }}
+        sx={{ zIndex: 3000 }}
       >
-        <Paper sx={{ zIndex: 9999, padding: 2, width: "300px" }}>
-          {children}
-        </Paper>
+        <Paper sx={{ padding: 2, width: "300px" }}>{children}</Paper>
       </Popover>
     </div>
   );

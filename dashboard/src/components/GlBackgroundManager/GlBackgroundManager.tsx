@@ -1,9 +1,11 @@
 import {
   Box,
   FormControl,
+  FormControlLabel,
+  FormLabel,
   InputLabel,
-  MenuItem,
-  Select,
+  Radio,
+  RadioGroup,
   Slider,
   TextField,
 } from "@mui/material";
@@ -34,29 +36,30 @@ export default function GlBackgroundManager() {
   return (
     <>
       <Box
-        sx={{ position: "absolute", top: 0, left: 0, padding: 1, zIndex: 999 }}
+        sx={{ position: "absolute", top: 0, left: 0, padding: 1, zIndex: 3000 }}
       >
         <DropDownPopper ButtonIcon={<SettingsIcon />}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {/* BG SELECTOR */}
-            <FormControl fullWidth>
-              <InputLabel id="background-selector-label">Background</InputLabel>
-              <Select
-                labelId="background-selector-label"
-                id="background-selector"
+            <FormControl component="fieldset" fullWidth>
+              <FormLabel component="legend">Background</FormLabel>
+              <RadioGroup
+                aria-label="background-selector"
+                name="background-selector"
                 value={selectedBG}
-                label="Background"
                 onChange={(event) =>
                   setSelectedBG(event.target.value as BACKGROUNDS)
                 }
-                size="small"
               >
                 {Object.keys(BACKGROUNDS).map((bg) => (
-                  <MenuItem value={bg} key={bg}>
-                    {bg}
-                  </MenuItem>
+                  <FormControlLabel
+                    key={bg}
+                    value={bg}
+                    control={<Radio size="small" />}
+                    label={bg}
+                  />
                 ))}
-              </Select>
+              </RadioGroup>
             </FormControl>
 
             {/* MAIN BG COLOR */}

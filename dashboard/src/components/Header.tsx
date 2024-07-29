@@ -79,7 +79,7 @@ export default function Header() {
         gap: isScale ? 4 : 1,
         flexWrap: "wrap",
         position: "relative",
-        zIndex: 99999,
+        zIndex: 2000,
       }}
       component={Paper}
     >
