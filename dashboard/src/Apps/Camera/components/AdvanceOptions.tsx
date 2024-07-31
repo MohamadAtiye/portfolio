@@ -81,7 +81,9 @@ export default function AdvanceOptions({
           {Object.entries(caps).map((item) => {
             const controlValue = item[1];
             const key = item[0];
-            const currentValue = updated[key];
+            const currentValue = updated[
+              key as keyof MediaTrackCapabilities
+            ] as string;
 
             // Check if it's an object with min, max, and step properties
             if (

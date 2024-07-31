@@ -211,6 +211,7 @@ function applyEffects(
   if (isFlip) os_context.scale(-1, 1);
   if (isBlur) os_context.filter = "blur(5px)";
 
+  // draw the frame
   const drawSrc = isEdge ? detectEdgesAndDraw(videoFrame) : videoFrame;
   if (isFlip) os_context.drawImage(drawSrc, -w, 0, w, h);
   else os_context.drawImage(drawSrc, 0, 0, w, h);
