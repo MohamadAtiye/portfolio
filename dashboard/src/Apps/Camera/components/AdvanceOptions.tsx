@@ -25,28 +25,19 @@ function SettingsInputRange({
 }: SettingsInputRangeProps) {
   return (
     <Box>
-      <Typography
-        variant="caption"
-        sx={{ display: "inline-block", width: "35px" }}
-      >
-        {Math.floor(min)}
-      </Typography>
       <input
         type="range"
         min={min}
         max={max}
         step={step}
-        // Add onChange handler as needed
         value={value}
         onChange={(e) => handleChange(Number(e.target.value))}
       />
-      <Typography
-        variant="caption"
-        sx={{ display: "inline-block", width: "35px" }}
-      >
-        {Math.ceil(max)}
+      <Typography variant="caption" sx={{ display: "inline-block" }}>
+        min:{Math.floor(min)}, max:{Math.ceil(max)}
+        {step ? `, step: ${step}` : ""}
       </Typography>
-      ={value}
+      , cur:{value}
     </Box>
   );
 }
@@ -63,7 +54,13 @@ export default function AdvanceOptions({
 }: AdvanceOptionsProps) {
   const [updated, setUpdated] = useState(settings);
   useEffect(() => {
-    setUpdated(settings);
+    const newSettings = { ...settings };
+    delete newSettings.height;
+    delete newSettings.width;
+    delete newSettings.aspectRatio;
+    delete newSettings.deviceId;
+    delete newSettings.groupId;
+    setUpdated(newSettings);
   }, [settings]);
 
   const [caps, setCaps] = useState(capabilities);

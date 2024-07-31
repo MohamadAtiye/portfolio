@@ -1,4 +1,11 @@
-import { Box, Select, MenuItem, Button } from "@mui/material";
+import {
+  Box,
+  Select,
+  MenuItem,
+  Button,
+  FormControlLabel,
+  Checkbox,
+} from "@mui/material";
 import { useCallback, useEffect, useRef, useState } from "react";
 import AdvanceOptions from "./components/AdvanceOptions";
 
@@ -61,6 +68,7 @@ async function listVideoDevices(): Promise<MediaDeviceInfo[]> {
 }
 
 async function requestVideoStream(constraints: MediaTrackConstraints) {
+  console.log("requestVideoStream", constraints);
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: constraints,
@@ -75,64 +83,66 @@ async function requestVideoStream(constraints: MediaTrackConstraints) {
 
 async function updateStream(
   stream: MediaStream,
-  constraints: MediaTrackConstraints,
-  advanced?: {
-    [x: string]: number | string;
-  }[]
+  constraints: MediaTrackConstraints
 ) {
+  console.log("updateStream", constraints);
+
   try {
-    await stream.getVideoTracks()[0].applyConstraints({
-      ...constraints,
-      advanced,
-    });
+    await stream.getVideoTracks()[0].applyConstraints(constraints);
   } catch (error) {
     console.error("error updating stream", constraints, error);
   }
 }
 
+async function processVideoFrame(videoFrame: VideoFrame) {
+  const canvas = new OffscreenCanvas(
+    videoFrame.displayWidth,
+    videoFrame.displayHeight
+  );
+  const ctx = canvas.getContext("2d")!;
+  ctx.scale(-1, 1); // Flip horizontally
+  ctx.drawImage(videoFrame, 0, 0);
+
+  // Create a new video frame from the modified canvas:
+  const newFrame = await canvas.convertToBlob({ type: "video/webm" });
+  return newFrame;
+}
+
+function createPipe(videoTrack: MediaStreamVideoTrack) {
+  // Create a Processor for reading the stream
+  const processor = new MediaStreamTrackProcessor({ track: videoTrack });
+
+  // Create a Generator for reassembling the stream
+  const generator = new MediaStreamTrackGenerator({ kind: "video" });
+
+  // transformer function that handles new frames
+  const transformer = new TransformStream({
+    async transform(videoFrame, controller) {
+      // Your custom processing logic here:
+      // e.g., detect barcode, apply filters, etc.
+      const modifiedFrame = await processVideoFrame(videoFrame);
+
+      // Queue the modified frame into the generator:
+      controller.enqueue(modifiedFrame);
+
+      // Close the original frame to free up resources
+      videoFrame.close();
+    },
+  });
+
+  // Connect the Processor to the Generator
+  processor.readable.pipeThrough(transformer).pipeTo(generator.writable);
+
+  // create output stream
+  const outStream = new MediaStream([generator]);
+
+  return { processor, generator, outStream };
+}
+
 export default function Camera() {
+  // source video stream
   const srcStream = useRef<MediaStream | null>(null); // original stream
-  // const stream = useRef<MediaStream | null>(null); // processed stream
-
   const videoRef = useRef<HTMLVideoElement | null>(null); // video element
-  const canvasRef = useRef<HTMLCanvasElement>(null); // screenshot effect canvas
-
-  const [deviceList, setDeviceList] = useState<MediaDeviceInfo[]>([]);
-  const [streamOptions, setStreamOptions] = useState({
-    resolution: "800x480",
-    deviceId: "",
-    permission: "prompt",
-  });
-
-  const [isShowAdvances, setIsShowAdvanced] = useState(false);
-
-  const setAdvancedOptions = (advanced: MediaTrackSettings) => {
-    console.log(advanced);
-
-    const advancedConstraints = Object.entries(advanced).map((item) => ({
-      [item[0]]: item[1],
-    }));
-
-    if (srcStream.current) {
-      const [width, height] = streamOptions.resolution.split("x").map(Number);
-      const constraints = {
-        deviceId: streamOptions.deviceId,
-        width: { exact: width },
-        height: { exact: height },
-      };
-      // Apply new constraints to the existing track
-      updateStream(srcStream.current, constraints, advancedConstraints).then(
-        () => {
-          srcStream.current && setStream(srcStream.current);
-        }
-      );
-    }
-  };
-
-  const [videoStats, setStats] = useState({
-    settings: {} as MediaTrackSettings,
-    capabilities: {} as MediaTrackCapabilities,
-  });
 
   // cleanup effect
   useEffect(() => {
@@ -148,25 +158,61 @@ export default function Camera() {
     };
   }, []);
 
+  // stream options
+  const [deviceList, setDeviceList] = useState<MediaDeviceInfo[]>([]);
+  const [streamArgs, setStreamArgs] = useState({
+    resolution: "800x480",
+    deviceId: "",
+    permission: "prompt",
+    advanced: [] as {
+      [x: string]: number | string;
+    }[],
+    effects: {
+      flipped: false,
+    },
+  });
+  const streamArgsRef = useRef({
+    resolution: "800x480",
+    deviceId: "",
+    permission: "prompt",
+    advanced: [] as {
+      [x: string]: number | string;
+    }[],
+    effects: {
+      flipped: false,
+    },
+  });
+  const [videoStats, setVideoStats] = useState({
+    settings: {} as MediaTrackSettings,
+    capabilities: {} as MediaTrackCapabilities,
+  });
+  const [isShowAdvances, setIsShowAdvanced] = useState(false);
+
   // handle device listing and selection
   useEffect(() => {
     function updateListAndSelection() {
       // check permission
       checkAndQueryCameraPermission().then((permission) => {
-        setStreamOptions((p) => ({ ...p, permission }));
-        if (permission !== "granted") return;
+        if (permission !== "granted") {
+          setStreamArgs((p) => ({
+            ...p,
+            permission,
+          }));
+          return;
+        }
 
         // get devices
         listVideoDevices().then((devices) => {
           setDeviceList(devices);
           // update selection if needed
           if (
-            !streamOptions.deviceId ||
-            !devices.find((d) => d.deviceId === streamOptions.deviceId)
+            !streamArgsRef.current.deviceId ||
+            !devices.find((d) => d.deviceId === streamArgsRef.current.deviceId)
           ) {
-            setStreamOptions((p) => ({
+            setStreamArgs((p) => ({
               ...p,
               deviceId: devices[0]?.deviceId ?? "",
+              permission,
             }));
           }
         });
@@ -183,87 +229,176 @@ export default function Camera() {
         updateListAndSelection
       );
     };
-  }, [streamOptions.deviceId]);
-
-  // set stream to video element and calculate stats
-  const setStream = useCallback((stream: MediaStream) => {
-    srcStream.current = stream;
-    if (videoRef.current && stream) {
-      // set stream to video element
-      videoRef.current.srcObject = stream;
-
-      // get video stats
-      const track = stream.getVideoTracks()[0];
-      const settings = track.getSettings();
-      const capabilities = track.getCapabilities();
-
-      console.log({ settings, capabilities });
-      setStats({
-        settings: {
-          ...settings,
-        },
-        capabilities: {
-          ...capabilities,
-        },
-      });
-    }
   }, []);
 
-  // handle device id and resolution change
+  // set stream to video element and calculate stats
+  const setStream = useCallback(
+    (stream: MediaStream, isTrackChanged = false) => {
+      if (isTrackChanged) srcStream.current = stream;
+
+      if (videoRef.current && stream) {
+        // get video stats
+        const track = stream.getVideoTracks()[0];
+        const settings = track.getSettings();
+        const capabilities = track.getCapabilities();
+
+        // set stream to video element
+        videoRef.current.srcObject = stream;
+
+        console.log("setStream", { settings, capabilities });
+        setVideoStats({
+          settings: {
+            ...settings,
+          },
+          capabilities: {
+            ...capabilities,
+          },
+        });
+      }
+    },
+    []
+  );
+
+  // called when streamArgs change
   useEffect(() => {
-    if (streamOptions.permission !== "granted") return;
+    console.log("useEffect", streamArgs);
+    // update the ref
+    streamArgsRef.current = { ...streamArgs };
 
-    const [width, height] = streamOptions.resolution.split("x").map(Number);
+    async function handleArgsChange() {
+      // return on no permission
+      if (streamArgs.permission !== "granted") return;
 
-    const constraints = {
-      deviceId: streamOptions.deviceId,
-      width: { exact: width },
-      height: { exact: height },
-    };
+      // get needed constraints
+      const [width, height] = streamArgs.resolution.split("x").map(Number);
+      const constraints = {
+        deviceId: streamArgs.deviceId,
+        width: { exact: width },
+        height: { exact: height },
+        advanced: streamArgs.advanced,
+      };
 
-    // Check if srcStream.current already exists
-    if (srcStream.current) {
+      /////////////////////////////// create new stream from scratch if not exist
+      if (!srcStream.current) {
+        // request new stream
+        const newStream = await requestVideoStream(constraints);
+        if (newStream) setStream(newStream, true);
+        else throw new Error("failed to get new stream");
+
+        return;
+      }
+
+      /////////////////////////////// else updating existing stream
+
       // Get the existing track's constraints
-      const oldConstraints = srcStream.current
-        .getVideoTracks()[0]
-        .getConstraints();
-
-      // Compare old and new constraints
-      const constraintsChanged =
-        JSON.stringify(oldConstraints) !== JSON.stringify(constraints);
-      if (!constraintsChanged) return; // nothing changed, why are we here?
+      const oldTracks = srcStream.current.getTracks();
+      const oldConstraints = oldTracks[0].getConstraints();
 
       // get new stream if deviceId changed
       if (oldConstraints.deviceId !== constraints.deviceId) {
-        // cleanup old stream
-        srcStream.current.getTracks().forEach((t) => t.stop());
+        const newStream = await requestVideoStream(constraints);
+        if (!newStream) throw new Error("failed to get new stream");
 
-        // request new stream
-        requestVideoStream(constraints).then((stream) => {
-          stream && setStream(stream);
-        });
+        // cleanup old stream
+        oldTracks.forEach((t) => t.stop());
+
+        // update src stream
+        setStream(newStream, true);
+        return;
       }
+
       // else update existing stream
-      else {
-        // Apply new constraints to the existing track
-        updateStream(srcStream.current, constraints).then(() => {
-          srcStream.current && setStream(srcStream.current);
-        });
-      }
-    } else {
-      // No existing stream, request a new one
-      requestVideoStream(constraints).then((stream) => {
-        stream && setStream(stream);
+      // Apply new constraints to the existing track
+      updateStream(srcStream.current, constraints).then(() => {
+        srcStream.current && setStream(srcStream.current);
       });
     }
-  }, [setStream, streamOptions]);
+    handleArgsChange();
+  }, [setStream, streamArgs]);
 
-  const timeouter1 = useRef<NodeJS.Timeout>();
-  const timeouter2 = useRef<NodeJS.Timeout>();
+  const setAdvancedOptions = (advanced: MediaTrackSettings) => {
+    const advancedConstraints = Object.entries(advanced).map((item) => ({
+      [item[0]]: item[1],
+    }));
+    console.log("setAdvancedOptions", { advanced, advancedConstraints });
 
+    setStreamArgs((p) => ({ ...p, advanced: advancedConstraints }));
+  };
+
+  ///////////////////////////////////////////////////////////////////////////////////// -- for Video Effects
+
+  const [videoEffects, setVideoEffects] = useState({
+    flipped: false,
+  });
+
+  // const videoEffectsRef = useRef({
+  //   flipped: false,
+  // });
+
+  // // handle effects changed
+  // useEffect(() => {
+  //   videoEffectsRef.current = { ...videoEffects };
+
+  //   // Clean up resources here
+  //   if (videoPipe.current) {
+  //     // Release any tracks or streams
+  //     try {
+  //       videoPipe.current.processor?.writableControl.close();
+  //     } catch (error) {
+  //       //do nothing
+  //     }
+  //     try {
+  //       videoPipe.current.processor?.writableControl.abort();
+  //     } catch (error) {
+  //       //do nothing
+  //     }
+  //     // try {
+  //     //   videoPipe.current.processor?.readable.cancel();
+  //     // } catch (error) {
+  //     //   //do nothing
+  //     // }
+  //     try {
+  //       videoPipe.current.generator?.stop();
+  //     } catch (error) {
+  //       //do nothing
+  //     }
+  //     try {
+  //       videoPipe.current.outStream
+  //         ?.getTracks()
+  //         .forEach((track) => track.stop());
+  //     } catch (error) {
+  //       //do nothing
+  //     }
+
+  //     videoPipe.current = null;
+  //   }
+
+  //   if (videoRef.current && srcStream.current) {
+  //     if (videoEffects.flipped) {
+  //       const track = srcStream.current?.getVideoTracks()[0];
+  //       if (!track) return;
+  //       videoPipe.current = createPipe(track);
+  //       videoRef.current.srcObject = videoPipe.current.outStream;
+  //     } else {
+  //       // set stream to video element
+  //       videoRef.current.srcObject = srcStream.current;
+  //     }
+  //   }
+  // }, [videoEffects]);
+
+  // const videoPipe = useRef<{
+  //   processor: MediaStreamTrackProcessor<VideoFrame>;
+  //   generator: MediaStreamVideoTrackGenerator;
+  //   outStream: MediaStream;
+  // } | null>(null); // processed stream
+
+  ///////////////////////////////////////////////////////////////////////////////////// -- FOR SCREENSHOT
+  const canvasRef = useRef<HTMLCanvasElement>(null); // screenshot effect canvas
+  const timeOuter1 = useRef<NodeJS.Timeout>();
+  const timeOuter2 = useRef<NodeJS.Timeout>();
   const handleScreenshot = () => {
-    clearTimeout(timeouter1.current);
-    clearTimeout(timeouter2.current);
+    clearTimeout(timeOuter1.current);
+    clearTimeout(timeOuter2.current);
     if (videoRef.current && canvasRef.current) {
       const video = videoRef.current;
       const canvas = canvasRef.current;
@@ -302,13 +437,13 @@ export default function Camera() {
         canvas.style.opacity = "1";
         canvas.style.display = "block";
 
-        timeouter1.current = setTimeout(() => {
+        timeOuter1.current = setTimeout(() => {
           canvas.style.transition = "all 1s ease-in-out";
           canvas.style.transform = "scale(0.2) translate(-80%, 80%)";
           canvas.style.opacity = "0";
         }, 100);
 
-        timeouter2.current = setTimeout(() => {
+        timeOuter2.current = setTimeout(() => {
           canvas.style.display = "none";
           canvas.style.transform = "none";
           canvas.style.transition = "none";
@@ -387,7 +522,7 @@ export default function Camera() {
         <tbody>
           <tr>
             <td>Permission</td>
-            <td>{streamOptions.permission}</td>
+            <td>{streamArgs.permission}</td>
           </tr>
           <tr>
             <td>Settings</td>
@@ -418,9 +553,9 @@ export default function Camera() {
       >
         <Box sx={{ display: "flex", flexWrap: "wrap" }}>
           <Select
-            value={streamOptions.deviceId}
+            value={streamArgs.deviceId}
             onChange={(e) => {
-              setStreamOptions((p) => ({
+              setStreamArgs((p) => ({
                 ...p,
                 deviceId: e.target.value as string,
               }));
@@ -435,9 +570,9 @@ export default function Camera() {
             ))}
           </Select>
           <Select
-            value={streamOptions.resolution}
+            value={streamArgs.resolution}
             onChange={(e) => {
-              setStreamOptions((p) => ({
+              setStreamArgs((p) => ({
                 ...p,
                 resolution: e.target.value as string,
               }));
@@ -453,6 +588,23 @@ export default function Camera() {
           </Select>
         </Box>
 
+        <Box>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={videoEffects.flipped}
+                onChange={(event) =>
+                  setVideoEffects({
+                    ...videoEffects,
+                    flipped: event.target.checked,
+                  })
+                }
+              />
+            }
+            label="Flip"
+          />
+        </Box>
+
         <Button onClick={() => setIsShowAdvanced((p) => !p)}>
           {isShowAdvances ? "Hide" : "Show"} advanced settings
         </Button>
@@ -465,6 +617,8 @@ export default function Camera() {
           />
         )}
       </Box>
+
+      {/* CAPTURE BUTTON */}
       <Box
         sx={{
           display: "flex",
