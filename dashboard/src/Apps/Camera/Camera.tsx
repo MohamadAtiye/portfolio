@@ -94,55 +94,146 @@ async function updateStream(
   }
 }
 
-async function processVideoFrame(videoFrame: VideoFrame) {
-  const canvas = new OffscreenCanvas(
-    videoFrame.displayWidth,
-    videoFrame.displayHeight
-  );
-  const ctx = canvas.getContext("2d")!;
-  ctx.scale(-1, 1); // Flip horizontally
-  ctx.drawImage(videoFrame, 0, 0);
+function applySobelFilter(
+  pixels: Uint8ClampedArray,
+  width: number,
+  height: number
+) {
+  // Create temporary arrays to store gradient values
+  const gradientX = new Float32Array(width * height);
+  const gradientY = new Float32Array(width * height);
 
-  // Create a new video frame from the modified canvas:
-  const newFrame = await canvas.convertToBlob({ type: "video/webm" });
-  return newFrame;
+  // Sobel kernels for X and Y directions
+  const sobelX = [-1, 0, 1, -2, 0, 2, -1, 0, 1];
+  const sobelY = [-1, -2, -1, 0, 0, 0, 1, 2, 1];
+
+  // Compute gradients
+  for (let y = 1; y < height - 1; y++) {
+    for (let x = 1; x < width - 1; x++) {
+      let sumX = 0;
+      let sumY = 0;
+
+      // Convolve with Sobel kernels
+      for (let ky = 0; ky < 3; ky++) {
+        for (let kx = 0; kx < 3; kx++) {
+          const pixelOffset = (y + ky - 1) * width + (x + kx - 1);
+          const pixelValue = pixels[pixelOffset * 4]; // Assuming grayscale image
+
+          sumX += sobelX[ky * 3 + kx] * pixelValue;
+          sumY += sobelY[ky * 3 + kx] * pixelValue;
+        }
+      }
+
+      // Store gradient magnitudes
+      // const gradientMagnitude = Math.sqrt(sumX * sumX + sumY * sumY);
+      gradientX[y * width + x] = sumX;
+      gradientY[y * width + x] = sumY;
+    }
+  }
+
+  // Combine gradients (e.g., using gradient magnitude)
+  const edgePixels = new Uint8ClampedArray(width * height * 4);
+  for (let i = 0; i < pixels.length; i += 4) {
+    const magnitude = Math.sqrt(gradientX[i / 4] ** 2 + gradientY[i / 4] ** 2);
+    const edgeValue = Math.min(255, magnitude); // Clamp to [0, 255]
+
+    edgePixels[i] = edgeValue; // Red channel
+    edgePixels[i + 1] = edgeValue; // Green channel
+    edgePixels[i + 2] = edgeValue; // Blue channel
+    edgePixels[i + 3] = 255; // Alpha channel (fully opaque)
+  }
+
+  return edgePixels;
 }
 
-function createPipe(videoTrack: MediaStreamVideoTrack) {
-  // Create a Processor for reading the stream
-  const processor = new MediaStreamTrackProcessor({ track: videoTrack });
+// Create an offscreen canvas
+const edgeCanvas = new OffscreenCanvas(100, 100);
+const edgeCtx = edgeCanvas.getContext("2d")!;
+function detectEdgesAndDraw(videoFrame: VideoFrame) {
+  edgeCanvas.width = videoFrame.displayWidth;
+  edgeCanvas.height = videoFrame.displayHeight;
 
-  // Create a Generator for reassembling the stream
-  const generator = new MediaStreamTrackGenerator({ kind: "video" });
+  // Draw the video frame onto the canvas
+  edgeCtx.drawImage(videoFrame, 0, 0);
 
-  // transformer function that handles new frames
-  const transformer = new TransformStream({
-    async transform(videoFrame, controller) {
-      // Your custom processing logic here:
-      // e.g., detect barcode, apply filters, etc.
-      const modifiedFrame = await processVideoFrame(videoFrame);
+  // Get the image data (pixel values)
+  const imageData = edgeCtx.getImageData(
+    0,
+    0,
+    edgeCanvas.width,
+    edgeCanvas.height
+  );
+  const pixels = imageData.data;
 
-      // Queue the modified frame into the generator:
-      controller.enqueue(modifiedFrame);
+  // Apply Sobel filter
+  const edgePixels = applySobelFilter(
+    pixels,
+    edgeCanvas.width,
+    edgeCanvas.height
+  );
 
-      // Close the original frame to free up resources
-      videoFrame.close();
-    },
-  });
+  // Replace the original pixel data with the edge-detected pixels
+  for (let i = 0; i < pixels.length; i += 4) {
+    pixels[i] = edgePixels[i];
+    pixels[i + 1] = edgePixels[i + 1];
+    pixels[i + 2] = edgePixels[i + 2];
+    // You can adjust the alpha channel (pixels[i + 3]) if needed
+  }
 
-  // Connect the Processor to the Generator
-  processor.readable.pipeThrough(transformer).pipeTo(generator.writable);
+  // Put the modified image data back onto the canvas
+  edgeCtx.putImageData(imageData, 0, 0);
 
-  // create output stream
-  const outStream = new MediaStream([generator]);
+  return edgeCanvas;
+}
 
-  return { processor, generator, outStream };
+function applyEffects(
+  os_canvas: OffscreenCanvas,
+  os_context: OffscreenCanvasRenderingContext2D,
+  videoFrame: VideoFrame,
+  isFlip = false,
+  isEdge = false,
+  isBlur = false
+) {
+  const w = videoFrame.displayWidth;
+  const h = videoFrame.displayHeight;
+
+  // Set canvas dimensions
+  os_canvas.width = w;
+  os_canvas.height = h;
+
+  // Clear the canvas
+  os_context.clearRect(0, 0, w, h);
+
+  // Draw the video frame on os_canvas
+  os_context.drawImage(videoFrame, 0, 0, w, h);
+
+  // Apply effects based on flags
+  if (isFlip) os_context.scale(-1, 1);
+  if (isBlur) os_context.filter = "blur(5px)";
+
+  const drawSrc = isEdge ? detectEdgesAndDraw(videoFrame) : videoFrame;
+  if (isFlip) os_context.drawImage(drawSrc, -w, 0, w, h);
+  else os_context.drawImage(drawSrc, 0, 0, w, h);
+
+  // restore
+  if (isFlip) os_context.setTransform(1, 0, 0, 1, 0, 0); // Reset transformation
+  if (isBlur) os_context.filter = "none"; // Reset filter
 }
 
 export default function Camera() {
   // source video stream
   const srcStream = useRef<MediaStream | null>(null); // original stream
+  const srcVideoRef = useRef<HTMLVideoElement | null>(null); // video element
   const videoRef = useRef<HTMLVideoElement | null>(null); // video element
+  const videoPipe = useRef<{
+    processor: MediaStreamTrackProcessor<VideoFrame> | null;
+    generator: MediaStreamVideoTrackGenerator | null;
+    outStream: MediaStream | null;
+  }>({
+    processor: null,
+    generator: null,
+    outStream: null,
+  }); // processed stream
 
   // cleanup effect
   useEffect(() => {
@@ -167,9 +258,6 @@ export default function Camera() {
     advanced: [] as {
       [x: string]: number | string;
     }[],
-    effects: {
-      flipped: false,
-    },
   });
   const streamArgsRef = useRef({
     resolution: "800x480",
@@ -178,9 +266,6 @@ export default function Camera() {
     advanced: [] as {
       [x: string]: number | string;
     }[],
-    effects: {
-      flipped: false,
-    },
   });
   const [videoStats, setVideoStats] = useState({
     settings: {} as MediaTrackSettings,
@@ -231,19 +316,102 @@ export default function Camera() {
     };
   }, []);
 
+  ///////////////////////////////////////////////////////////////////////////////////// -- for Video Effects START
+  const [videoEffects, setVideoEffects] = useState({
+    flipped: false,
+    blurred: false,
+    edge: false,
+  });
+  const videoEffectsRef = useRef({
+    flipped: false,
+    blurred: false,
+    edge: false,
+  });
+  useEffect(() => {
+    videoEffectsRef.current = { ...videoEffects };
+  }, [videoEffects]);
+
   // set stream to video element and calculate stats
   const setStream = useCallback(
     (stream: MediaStream, isTrackChanged = false) => {
-      if (isTrackChanged) srcStream.current = stream;
+      if (isTrackChanged) {
+        srcStream.current = stream;
 
-      if (videoRef.current && stream) {
+        // create media pipe
+        const track = stream.getVideoTracks()[0];
+        console.log({ track });
+        // Create a Processor for reading the stream
+        const processor = new MediaStreamTrackProcessor({ track: track });
+
+        // Create a Generator for reassembling the stream
+        const generator = new MediaStreamTrackGenerator({ kind: "video" });
+
+        const os_canvas = new OffscreenCanvas(640, 360);
+        const os_context = os_canvas.getContext("2d", {
+          willReadFrequently: true,
+        })!;
+        const transformer = new TransformStream({
+          async transform(
+            videoFrame: VideoFrame,
+            controller: TransformStreamDefaultController
+          ) {
+            applyEffects(
+              os_canvas,
+              os_context,
+              videoFrame,
+              videoEffectsRef.current.flipped,
+              videoEffectsRef.current.edge,
+              videoEffectsRef.current.blurred
+            );
+
+            // const w = videoFrame.displayWidth;
+            // const h = videoFrame.displayHeight;
+            // os_canvas.width = w;
+            // os_canvas.height = h;
+
+            // os_context.clearRect(0, 0, w, h);
+
+            // if (videoEffectsRef.current.flipped) {
+            //   // Flip the frame horizontally
+            //   os_context.scale(-1, 1); // Scale horizontally by -1 (flips horizontally)
+            //   os_context.translate(-w, 0); // Translate back to original position
+            // }
+            // os_context.drawImage(videoFrame, 0, 0);
+
+            // Create a new video frame from the canvas
+            const outFrame = new VideoFrame(os_canvas, {
+              timestamp: videoFrame.timestamp,
+            });
+
+            // Enqueue the blurred frame
+            controller.enqueue(outFrame);
+
+            // Close the original frame to free up resources
+            videoFrame.close();
+          },
+        });
+
+        // Connect the Processor to the Generator
+        processor.readable.pipeThrough(transformer).pipeTo(generator.writable);
+
+        // create output stream
+        videoPipe.current.outStream = new MediaStream([generator]);
+      }
+
+      if (
+        videoRef.current &&
+        srcVideoRef.current &&
+        stream &&
+        videoPipe.current.outStream
+      ) {
         // get video stats
         const track = stream.getVideoTracks()[0];
         const settings = track.getSettings();
         const capabilities = track.getCapabilities();
 
         // set stream to video element
-        videoRef.current.srcObject = stream;
+        videoRef.current.srcObject = videoPipe.current.outStream;
+        srcVideoRef.current.srcObject = stream;
 
         console.log("setStream", { settings, capabilities });
         setVideoStats({
@@ -258,6 +426,7 @@ export default function Camera() {
     },
     []
   );
+  ///////////////////////////////////////////////////////////////////////////////////// -- for Video Effects END
 
   // called when streamArgs change
   useEffect(() => {
@@ -324,73 +493,6 @@ export default function Camera() {
 
     setStreamArgs((p) => ({ ...p, advanced: advancedConstraints }));
   };
-
-  ///////////////////////////////////////////////////////////////////////////////////// -- for Video Effects
-
-  const [videoEffects, setVideoEffects] = useState({
-    flipped: false,
-  });
-
-  // const videoEffectsRef = useRef({
-  //   flipped: false,
-  // });
-
-  // // handle effects changed
-  // useEffect(() => {
-  //   videoEffectsRef.current = { ...videoEffects };
-
-  //   // Clean up resources here
-  //   if (videoPipe.current) {
-  //     // Release any tracks or streams
-  //     try {
-  //       videoPipe.current.processor?.writableControl.close();
-  //     } catch (error) {
-  //       //do nothing
-  //     }
-  //     try {
-  //       videoPipe.current.processor?.writableControl.abort();
-  //     } catch (error) {
-  //       //do nothing
-  //     }
-  //     // try {
-  //     //   videoPipe.current.processor?.readable.cancel();
-  //     // } catch (error) {
-  //     //   //do nothing
-  //     // }
-  //     try {
-  //       videoPipe.current.generator?.stop();
-  //     } catch (error) {
-  //       //do nothing
-  //     }
-  //     try {
-  //       videoPipe.current.outStream
-  //         ?.getTracks()
-  //         .forEach((track) => track.stop());
-  //     } catch (error) {
-  //       //do nothing
-  //     }
-
-  //     videoPipe.current = null;
-  //   }
-
-  //   if (videoRef.current && srcStream.current) {
-  //     if (videoEffects.flipped) {
-  //       const track = srcStream.current?.getVideoTracks()[0];
-  //       if (!track) return;
-  //       videoPipe.current = createPipe(track);
-  //       videoRef.current.srcObject = videoPipe.current.outStream;
-  //     } else {
-  //       // set stream to video element
-  //       videoRef.current.srcObject = srcStream.current;
-  //     }
-  //   }
-  // }, [videoEffects]);
-
-  // const videoPipe = useRef<{
-  //   processor: MediaStreamTrackProcessor<VideoFrame>;
-  //   generator: MediaStreamVideoTrackGenerator;
-  //   outStream: MediaStream;
-  // } | null>(null); // processed stream
 
   ///////////////////////////////////////////////////////////////////////////////////// -- FOR SCREENSHOT
   const canvasRef = useRef<HTMLCanvasElement>(null); // screenshot effect canvas
@@ -502,6 +604,19 @@ export default function Camera() {
             objectFit: "contain",
           }}
         />
+        <video
+          ref={srcVideoRef}
+          autoPlay
+          muted
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100px",
+            height: "100px",
+            objectFit: "contain",
+          }}
+        />
         <canvas
           ref={canvasRef}
           style={{
@@ -602,6 +717,34 @@ export default function Camera() {
               />
             }
             label="Flip"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={videoEffects.blurred}
+                onChange={(event) =>
+                  setVideoEffects({
+                    ...videoEffects,
+                    blurred: event.target.checked,
+                  })
+                }
+              />
+            }
+            label="Blur"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={videoEffects.edge}
+                onChange={(event) =>
+                  setVideoEffects({
+                    ...videoEffects,
+                    edge: event.target.checked,
+                  })
+                }
+              />
+            }
+            label="Edge"
           />
         </Box>
 

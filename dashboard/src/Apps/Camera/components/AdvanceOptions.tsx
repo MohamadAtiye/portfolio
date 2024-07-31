@@ -7,7 +7,7 @@ import {
   RadioGroup,
   Typography,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 interface SettingsInputRangeProps {
   min: number;
@@ -80,6 +80,8 @@ export default function AdvanceOptions({
         <tbody>
           {Object.entries(caps).map((item) => {
             const controlValue = item[1];
+            const key = item[0];
+            const currentValue = updated[key];
 
             // Check if it's an object with min, max, and step properties
             if (
@@ -90,17 +92,17 @@ export default function AdvanceOptions({
             ) {
               // Render a range bar (slider)
               return (
-                <tr key={item[0]}>
-                  <td>{item[0]}</td>
+                <tr key={key}>
+                  <td>{key}</td>
                   <td>
                     <SettingsInputRange
                       min={controlValue.min}
                       max={controlValue.max}
                       step={controlValue.step ?? 1}
                       // Add onChange handler as needed
-                      value={parseInt(updated[item[0]])}
+                      value={parseInt(currentValue)}
                       handleChange={(v: number) =>
-                        setUpdated((p) => ({ ...p, [item[0]]: v }))
+                        setUpdated((p) => ({ ...p, [key]: v }))
                       }
                     />
                   </td>
@@ -109,19 +111,19 @@ export default function AdvanceOptions({
             } else if (Array.isArray(controlValue)) {
               // Render radio buttons for an array of strings
               return (
-                <tr key={item[0]}>
-                  <td>{item[0]}</td>
+                <tr key={key}>
+                  <td>{key}</td>
                   <td>
                     <FormControl component="fieldset">
                       <RadioGroup
                         row
                         aria-label="radio-group"
                         name="radio-group"
-                        value={updated[item[0]]}
+                        value={currentValue}
                         onChange={(event) => {
                           setUpdated((p) => ({
                             ...p,
-                            [item[0]]: event.target.value,
+                            [key]: event.target.value,
                           }));
                         }}
                       >
@@ -141,9 +143,11 @@ export default function AdvanceOptions({
             } else {
               // Fallback: Just display the value as a string
               return (
-                <tr key={item[0]}>
-                  <td>{item[0]}</td>
-                  <td>{JSON.stringify(controlValue)}</td>
+                <tr key={key}>
+                  <td>{key}</td>
+                  <td>
+                    {JSON.stringify(controlValue)}, {currentValue}
+                  </td>
                 </tr>
               );
             }
