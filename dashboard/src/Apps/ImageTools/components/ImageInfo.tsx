@@ -1,0 +1,127 @@
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Typography,
+} from "@mui/material";
+import { useState } from "react";
+import { useData } from "../helpers/useData";
+
+function formatFileSize(fileSizeInBytes: number): string {
+  const kilobytes = fileSizeInBytes / 1024;
+  const megabytes = kilobytes / 1024;
+
+  if (megabytes >= 1) {
+    // If the file size is 1 MB or more, return it in MB
+    return `${megabytes.toFixed(2)} MB`;
+  } else {
+    // Otherwise, return it in KB
+    return `${kilobytes.toFixed(2)} KB`;
+  }
+}
+
+export default function ImageInfo() {
+  const { srcImgInfo, clearSrc, currentImage, imgHistory } = useData();
+
+  const [isShowDeleteDialog, setIsShowDeleteDialog] = useState(false);
+
+  if (!currentImage) return <></>;
+  return (
+    <>
+      <Box
+        sx={{
+          display: "flex",
+          gap: 2,
+          flexWrap: "wrap",
+          paddingBottom: 1,
+        }}
+      >
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+          <Typography>Source Image:</Typography>
+          <Button
+            size="small"
+            variant="contained"
+            onClick={() => {
+              setIsShowDeleteDialog(true);
+            }}
+          >
+            Remove
+          </Button>
+        </Box>
+
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+          <Typography>Name</Typography>
+          <Typography>{srcImgInfo.name}</Typography>
+        </Box>
+
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+          <Typography>Size</Typography>
+          <Typography>{formatFileSize(srcImgInfo.size)}</Typography>
+        </Box>
+
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+          <Typography>Type</Typography>
+          <Typography>{srcImgInfo.type}</Typography>
+        </Box>
+
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+          <Typography>Dims</Typography>
+          <Typography>
+            w:{srcImgInfo.w}, h:{srcImgInfo.h}
+          </Typography>
+        </Box>
+      </Box>
+
+      {imgHistory.length > 1 && (
+        <Box sx={{ height: "100px", display: "flex", gap: 2 }}>
+          {imgHistory.map((item, index) => (
+            <figure key={`${index}-${item.op}`}>
+              <figcaption style={{ textAlign: "center" }}>{item.op}</figcaption>
+              <img
+                src={item.imageDataUrl}
+                style={{ height: "80px", width: "100px", objectFit: "contain" }}
+              />
+            </figure>
+          ))}
+        </Box>
+      )}
+
+      <Dialog
+        open={isShowDeleteDialog}
+        onClose={() => setIsShowDeleteDialog(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">Confirm Remove Image</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Are you sure you want to remove image? You will lose any changes
+            made.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setIsShowDeleteDialog(false);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              clearSrc();
+              setIsShowDeleteDialog(false);
+            }}
+            autoFocus
+          >
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  );
+}

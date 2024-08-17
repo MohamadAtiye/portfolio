@@ -8,6 +8,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import DrawIcon from "@mui/icons-material/Draw";
 import CalculateOutlinedIcon from "@mui/icons-material/CalculateOutlined";
 import ChatOutlinedIcon from "@mui/icons-material/ChatOutlined";
+import FilterIcon from "@mui/icons-material/Filter";
 
 import { ReactNode, useState } from "react";
 import { useDashboard } from "../hooks/useDashboard";
@@ -146,6 +147,14 @@ export default function Header() {
             app={APP_NAMES.calculator}
             onClick={() => {
               handleClickApp(APP_NAMES.calculator);
+            }}
+            isScale={isScale}
+          />
+          <HeaderIcon
+            icon={<FilterIcon fontSize="large" />}
+            app={APP_NAMES.imageTools}
+            onClick={() => {
+              handleClickApp(APP_NAMES.imageTools);
             }}
             isScale={isScale}
           />
