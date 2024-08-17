@@ -1,14 +1,17 @@
-import { Box, Button } from "@mui/material";
+import { Box } from "@mui/material";
 import { ACTIONS, useData } from "../helpers/useData";
 import CropTool from "./ImageEditor/cropTool/CropTool";
 import CurrentImg from "./ImageEditor/CurrentImg";
 
 const ImageEditor = () => {
-  const { activeAction, setActiveAction } = useData();
+  const {
+    activeAction,
+    // setActiveAction
+  } = useData();
 
-  const updateAction = (newAction: ACTIONS) => {
-    setActiveAction(activeAction === newAction ? ACTIONS.none : newAction);
-  };
+  // const updateAction = (newAction: ACTIONS) => {
+  //   setActiveAction(activeAction === newAction ? ACTIONS.none : newAction);
+  // };
 
   return (
     <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
