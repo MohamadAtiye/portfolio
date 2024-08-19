@@ -26,7 +26,7 @@ export default function ImageExport() {
   const [type, setType] = useState("image/jpeg");
   const typeOptions = ["image/jpeg", "image/png", "image/webp"];
 
-  const [quality, setQuality] = useState(100);
+  const [quality, setQuality] = useState(80);
   const qualityOptions = Array.from({ length: 10 }, (_, i) => (i + 1) * 10);
 
   const [size, setSize] = useState(0);

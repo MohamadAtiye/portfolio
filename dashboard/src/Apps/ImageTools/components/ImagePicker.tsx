@@ -29,7 +29,6 @@ const ImagePicker = () => {
   };
   const onDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
-    console.log("drag end");
     if (boxRef.current) boxRef.current.style.borderColor = "gray";
   };
 

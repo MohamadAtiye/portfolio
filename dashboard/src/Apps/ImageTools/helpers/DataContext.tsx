@@ -18,8 +18,6 @@ export const DataContext = createContext<
         h: number;
       };
       clearSrc: () => void;
-      activeActionData: string;
-      setActiveActionData: (val: string) => void;
       submitChange: (imageDataUrl: string, op: string) => void;
       imgHistory: {
         img: HTMLImageElement;
@@ -37,7 +35,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [activeAction, setActiveAction] = useState(ACTIONS.none);
-  const [activeActionData, setActiveActionData] = useState<string>("");
 
   // SRC DATA
   const [srcFile, setSrcFile] = useState<File | undefined>();
@@ -111,7 +108,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
       h: 0,
     });
     setActiveAction(ACTIONS.none);
-    setActiveActionData("");
     setImgHistory([]);
     setActiveImage(0);
   };
@@ -125,8 +121,6 @@ export const DataProvider: React.FC<{ children: ReactNode }> = ({
         srcFile,
         srcImgInfo,
         clearSrc,
-        activeActionData,
-        setActiveActionData,
         submitChange,
         imgHistory,
         currentImage: imgHistory[activeImage],

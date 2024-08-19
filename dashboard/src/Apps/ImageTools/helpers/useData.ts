@@ -1,11 +1,11 @@
 import { useContext } from "react";
 import { DataContext } from "./DataContext";
 
-
 export enum ACTIONS {
   none = "none",
   crop = "crop",
   resize = "resize",
+  history = "history",
 }
 
 export const useData = () => {

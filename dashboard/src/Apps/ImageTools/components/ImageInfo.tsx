@@ -12,9 +12,8 @@ import { useState } from "react";
 import { useData } from "../helpers/useData";
 import { formatFileSize } from "../helpers/utils";
 
-
 export default function ImageInfo() {
-  const { srcImgInfo, clearSrc, currentImage, imgHistory } = useData();
+  const { srcImgInfo, clearSrc, currentImage } = useData();
 
   const [isShowDeleteDialog, setIsShowDeleteDialog] = useState(false);
 
@@ -64,20 +63,6 @@ export default function ImageInfo() {
           </Typography>
         </Box>
       </Box>
-
-      {imgHistory.length > 1 && (
-        <Box sx={{ height: "100px", display: "flex", gap: 2 }}>
-          {imgHistory.map((item, index) => (
-            <figure key={`${index}-${item.op}`}>
-              <figcaption style={{ textAlign: "center" }}>{item.op}</figcaption>
-              <img
-                src={item.imageDataUrl}
-                style={{ height: "80px", width: "100px", objectFit: "contain" }}
-              />
-            </figure>
-          ))}
-        </Box>
-      )}
 
       <Dialog
         open={isShowDeleteDialog}
