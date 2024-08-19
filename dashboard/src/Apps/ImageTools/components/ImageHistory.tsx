@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { useRef, useState } from "react";
 import { useData } from "../helpers/useData";
-import CurrentImg from "./ImageEditor/CurrentImg";
+import CurrentImg from "./CurrentImg";
 
 export default function ImageHistory() {
   const { imgHistory, submitChange } = useData();
@@ -29,51 +29,49 @@ export default function ImageHistory() {
 
   return (
     <>
-      {imgHistory.length > 0 && (
-        <Box
-          ref={containerRef}
-          sx={{
-            height: "120px",
-            display: "flex",
-            flexDirection: "row",
-            gap: 2,
-            overflowX: "auto",
-            scrollbarWidth: "thin",
-            scrollBehavior: "smooth",
-          }}
-        >
-          {imgHistory.map((item, index) => (
-            <Box>
-              <figure
-                key={`${index}-${item.op}`}
-                style={{ cursor: "pointer" }}
-                onClick={() => setIsShowRestoreDialog(index)}
-                title={`Restore Image ${item.op}`}
+      <Box
+        ref={containerRef}
+        sx={{
+          height: "120px",
+          display: "flex",
+          flexDirection: "row",
+          gap: 2,
+          overflowX: "auto",
+          scrollbarWidth: "thin",
+          scrollBehavior: "smooth",
+        }}
+      >
+        {imgHistory.map((item, index) => (
+          <Box>
+            <figure
+              key={`${index}-${item.op}`}
+              style={{ cursor: "pointer" }}
+              onClick={() => setIsShowRestoreDialog(index)}
+              title={`Restore Image ${item.op}`}
+            >
+              <figcaption
+                style={{
+                  textAlign: "center",
+                  width: "100px",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
               >
-                <figcaption
-                  style={{
-                    textAlign: "center",
-                    width: "100px",
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {item.op}
-                </figcaption>
-                <img
-                  src={item.imageDataUrl}
-                  style={{
-                    height: "75px",
-                    width: "100px",
-                    objectFit: "contain",
-                  }}
-                />
-              </figure>
-            </Box>
-          ))}
-        </Box>
-      )}
+                {item.op}
+              </figcaption>
+              <img
+                src={item.imageDataUrl}
+                style={{
+                  height: "75px",
+                  width: "100px",
+                  objectFit: "contain",
+                }}
+              />
+            </figure>
+          </Box>
+        ))}
+      </Box>
 
       <Box
         sx={{

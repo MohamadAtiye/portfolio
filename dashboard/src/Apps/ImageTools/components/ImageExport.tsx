@@ -10,7 +10,7 @@ import {
 import { useData } from "../helpers/useData";
 import { useEffect, useMemo, useState } from "react";
 import { formatFileSize } from "../helpers/utils";
-import CurrentImg from "./ImageEditor/CurrentImg";
+import CurrentImg from "./CurrentImg";
 
 export default function ImageExport() {
   const { currentImage } = useData();

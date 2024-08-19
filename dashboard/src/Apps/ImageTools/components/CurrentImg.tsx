@@ -1,4 +1,4 @@
-import { ACTIONS, useData } from "../../helpers/useData";
+import { ACTIONS, useData } from "../helpers/useData";
 
 export default function CurrentImg() {
   const { currentImage, activeAction } = useData();

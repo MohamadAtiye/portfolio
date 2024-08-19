@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { useData } from "../../../helpers/useData";
+import { useData } from "../../helpers/useData";
 
 interface CropCanvasProps {
   crop: {

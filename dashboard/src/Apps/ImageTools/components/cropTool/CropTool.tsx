@@ -3,7 +3,7 @@ import CropCanvas from "./CropCanvas";
 import CurrentImg from "../CurrentImg";
 import CropControl from "./CropControl";
 import { useState } from "react";
-import { ACTIONS, useData } from "../../../helpers/useData";
+import { ACTIONS, useData } from "../../helpers/useData";
 
 export default function CropTool() {
   const { currentImage, submitChange, setActiveAction } = useData();

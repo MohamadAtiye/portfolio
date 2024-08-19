@@ -1,5 +1,5 @@
 import { Box, Button, TextField } from "@mui/material";
-import { useData } from "../../../helpers/useData";
+import { useData } from "../../helpers/useData";
 import { useEffect, useRef, useState } from "react";
 
 interface CropControlProps {
@@ -22,6 +22,7 @@ export default function CropControl({
 
   useEffect(() => {
     changeCropMode("manual");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const cropModeRef = useRef(cropMode);

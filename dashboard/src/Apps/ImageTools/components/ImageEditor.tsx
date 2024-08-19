@@ -1,9 +1,10 @@
 import { Box, Button } from "@mui/material";
 import { ACTIONS, useData } from "../helpers/useData";
-import CropTool from "./ImageEditor/cropTool/CropTool";
-import CurrentImg from "./ImageEditor/CurrentImg";
+import CropTool from "./cropTool/CropTool";
+import CurrentImg from "./CurrentImg";
 import ImageHistory from "./ImageHistory";
 import ImageExport from "./ImageExport";
+import ImageResize from "./ImageResize";
 // import CropControl from "./ImageEditor/cropTool/CropControl";
 
 const ImageEditor = () => {
@@ -26,7 +27,7 @@ const ImageEditor = () => {
         >
           Crop
         </Button>
-        {/* <Button
+        <Button
           size="small"
           variant={activeAction === ACTIONS.resize ? "contained" : "outlined"}
           onClick={() => {
@@ -34,7 +35,7 @@ const ImageEditor = () => {
           }}
         >
           Resize
-        </Button> */}
+        </Button>
         <Button
           size="small"
           variant={activeAction === ACTIONS.history ? "contained" : "outlined"}
@@ -71,6 +72,7 @@ const ImageEditor = () => {
         {activeAction === ACTIONS.crop && <CropTool />}
         {activeAction === ACTIONS.history && <ImageHistory />}
         {activeAction === ACTIONS.export && <ImageExport />}
+        {activeAction === ACTIONS.resize && <ImageResize />}
       </Box>
     </Box>
   );
