@@ -2,12 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { useData } from "../../../helpers/useData";
 
 export default function CropCanvas() {
-  const { currentImage, activeActionData, submitChange } = useData();
+  const { currentImage, activeActionData } = useData();
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  const [outSize, setOutSize] = useState({ w: 0, h: 0 });
-  const [modifier, setModifier] = useState(0);
+  // const [outSize, setOutSize] = useState({ w: 0, h: 0 });
+  // const [modifier, setModifier] = useState(0);
 
   const [crop, setCrop] = useState({
     x: 0,
