@@ -3,7 +3,6 @@ import ImageInfo from "./components/ImageInfo";
 import { useData } from "./helpers/useData";
 import ImageEditor from "./components/ImageEditor";
 import ImagePicker from "./components/ImagePicker";
-import ImageExport from "./components/ImageExport";
 
 export default function App() {
   const { currentImage } = useData();
@@ -14,9 +13,6 @@ export default function App() {
 
       {/* SRC IMAGE INFO */}
       <ImageInfo />
-
-      {/* EXPORT TOOLS */}
-      <ImageExport />
     </Box>
   );
 }

@@ -6,6 +6,7 @@ export enum ACTIONS {
   crop = "crop",
   resize = "resize",
   history = "history",
+  export = "export",
 }
 
 export const useData = () => {

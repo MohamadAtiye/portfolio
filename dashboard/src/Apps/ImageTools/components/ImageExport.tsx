@@ -10,6 +10,7 @@ import {
 import { useData } from "../helpers/useData";
 import { useEffect, useMemo, useState } from "react";
 import { formatFileSize } from "../helpers/utils";
+import CurrentImg from "./ImageEditor/CurrentImg";
 
 export default function ImageExport() {
   const { currentImage } = useData();
@@ -108,99 +109,97 @@ export default function ImageExport() {
 
   return (
     <>
-      {currentImage && (
-        <Box
-          sx={{
-            display: "flex",
-            gap: 2,
-            flexWrap: "wrap",
-            paddingBottom: 1,
-          }}
-        >
-          <Box sx={{ display: "flex", flexDirection: "column" }}>
-            <Typography>Destination Image:</Typography>
-            <Button
-              size="small"
-              variant="contained"
-              onClick={() => {
-                downloadImage("test.jpeg");
+      <Box
+        sx={{
+          display: "flex",
+          gap: 2,
+          flexWrap: "wrap",
+          padding: 2,
+          height: "120px",
+        }}
+      >
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+          <Typography>Destination Image:</Typography>
+          <Button
+            size="small"
+            variant="contained"
+            onClick={() => {
+              downloadImage("test.jpeg");
+            }}
+          >
+            Download
+          </Button>
+        </Box>
+
+        {/* IMAGE TYPE */}
+        <Box sx={{ display: "flex", flexDirection: "column", width: "150px" }}>
+          <FormControl variant="outlined" fullWidth>
+            <InputLabel id="step-select-label">Select Type</InputLabel>
+            <Select
+              labelId="step-select-label"
+              value={type}
+              onChange={(event) => {
+                setType(event.target.value);
               }}
+              label="Select Value"
             >
-              Download
-            </Button>
-          </Box>
+              {typeOptions.map((option) => (
+                <MenuItem key={option} value={option}>
+                  {option}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
 
-          {/* <Box sx={{ display: "flex", flexDirection: "column" }}>
-          <Typography>Name</Typography>
-          <Typography>{srcImgInfo.name}</Typography>
-        </Box> */}
-
-          {/* IMAGE TYPE */}
+        {/* IMAGE QUALITY */}
+        {type !== "image/png" && (
           <Box
             sx={{ display: "flex", flexDirection: "column", width: "150px" }}
           >
             <FormControl variant="outlined" fullWidth>
-              <InputLabel id="step-select-label">Select Type</InputLabel>
+              <InputLabel id="step-select-label">Select Quality</InputLabel>
               <Select
                 labelId="step-select-label"
-                value={type}
+                value={quality}
                 onChange={(event) => {
-                  setType(event.target.value);
+                  setQuality(event.target.value as number);
                 }}
                 label="Select Value"
               >
-                {typeOptions.map((option) => (
+                {qualityOptions.map((option) => (
                   <MenuItem key={option} value={option}>
-                    {option}
+                    {option}%
                   </MenuItem>
                 ))}
               </Select>
             </FormControl>
           </Box>
+        )}
 
-          {/* IMAGE QUALITY */}
-          {type !== "image/png" && (
-            <Box
-              sx={{ display: "flex", flexDirection: "column", width: "150px" }}
-            >
-              <FormControl variant="outlined" fullWidth>
-                <InputLabel id="step-select-label">Select Quality</InputLabel>
-                <Select
-                  labelId="step-select-label"
-                  value={quality}
-                  onChange={(event) => {
-                    setQuality(event.target.value as number);
-                  }}
-                  label="Select Value"
-                >
-                  {qualityOptions.map((option) => (
-                    <MenuItem key={option} value={option}>
-                      {option}%
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-          )}
-
-          <Box sx={{ display: "flex", flexDirection: "column" }}>
-            <Typography>Size</Typography>
-            <Typography>{formatFileSize(size)}</Typography>
-          </Box>
-
-          {/* <Box sx={{ display: "flex", flexDirection: "column" }}>
-          <Typography>Type</Typography>
-          <Typography>{srcImgInfo.type}</Typography>
-        </Box>  */}
-
-          <Box sx={{ display: "flex", flexDirection: "column" }}>
-            <Typography>Dims</Typography>
-            <Typography>
-              w:{info.w}, h:{info.h}
-            </Typography>
-          </Box>
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+          <Typography>Size</Typography>
+          <Typography>{formatFileSize(size)}</Typography>
         </Box>
-      )}
+
+        <Box sx={{ display: "flex", flexDirection: "column" }}>
+          <Typography>Dims</Typography>
+          <Typography>
+            w:{info.w}, h:{info.h}
+          </Typography>
+        </Box>
+      </Box>
+
+      <Box
+        sx={{
+          flex: 1,
+          width: "100%",
+          position: "relative",
+          overflow: "hidden",
+        }}
+      >
+        <CurrentImg />
+      </Box>
     </>
   );
 }

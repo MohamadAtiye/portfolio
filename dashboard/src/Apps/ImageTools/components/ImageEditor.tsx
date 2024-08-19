@@ -3,6 +3,7 @@ import { ACTIONS, useData } from "../helpers/useData";
 import CropTool from "./ImageEditor/cropTool/CropTool";
 import CurrentImg from "./ImageEditor/CurrentImg";
 import ImageHistory from "./ImageHistory";
+import ImageExport from "./ImageExport";
 // import CropControl from "./ImageEditor/cropTool/CropControl";
 
 const ImageEditor = () => {
@@ -43,6 +44,15 @@ const ImageEditor = () => {
         >
           History
         </Button>
+        <Button
+          size="small"
+          variant={activeAction === ACTIONS.export ? "contained" : "outlined"}
+          onClick={() => {
+            updateAction(ACTIONS.export);
+          }}
+        >
+          Export
+        </Button>
       </Box>
 
       {/* IMAGE AND CANVAS DISPLAY */}
@@ -60,6 +70,7 @@ const ImageEditor = () => {
         {activeAction === ACTIONS.none && <CurrentImg />}
         {activeAction === ACTIONS.crop && <CropTool />}
         {activeAction === ACTIONS.history && <ImageHistory />}
+        {activeAction === ACTIONS.export && <ImageExport />}
       </Box>
     </Box>
   );
