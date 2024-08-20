@@ -100,32 +100,48 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     await api_sendSMS("general", content, auth.token);
   };
 
-  // TODO: run long poll to get sms if user has auth
+  // LONG POLL messages
   const lastId = useRef(0);
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (auth && auth.token) {
-        api_getSMS(lastId.current, auth.token).then((res) => {
+    let isPolling = true;
+
+    const pollSMS = async () => {
+      if (auth && auth.token && isPolling) {
+        try {
+          const res = await api_getSMS(lastId.current, auth.token);
           if (res && res.length > 0) {
-            lastId.current = res[res.length - 1].id;
+            console.log({ res });
             const maxId = Math.max(...res.map((s) => s.id));
             lastId.current = maxId;
-            console.log(res, lastId.current);
 
-            if (auth && auth.token)
-              setChatHistory((p) => {
-                const updated = [...p, ...res].sort(
-                  (a, b) => a.sendTS - b.sendTS
-                );
-                return updated;
-              });
+            setChatHistory((prev) => {
+              const updated = [...prev, ...res].sort(
+                (a, b) => a.sendTS - b.sendTS
+              );
+              return updated;
+            });
+
+            setTimeout(() => {
+              const ChatMessagesArea =
+                document.querySelector("#ChatMessagesArea");
+              if (ChatMessagesArea) {
+                ChatMessagesArea.scrollTop = ChatMessagesArea.scrollHeight;
+              }
+            }, 200);
           }
-        });
+        } catch (error) {
+          console.error("Error fetching SMS:", error);
+        }
+
+        // Continue polling after a short delay
+        setTimeout(pollSMS, 500); // Adjust the delay as needed
       }
-    }, 2000);
+    };
+
+    pollSMS(); // Start the initial poll
 
     return () => {
-      clearInterval(interval);
+      isPolling = false; // Stop polling when the component unmounts
     };
   }, [auth]);
 

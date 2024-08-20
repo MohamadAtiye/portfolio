@@ -4,8 +4,6 @@ require_once "JWTHandler.php";
 
 $jwtHandler = new JWTHandler();
 $MAX_SMS_LENGTH = 160;
-$POLL_DURATION = 30; // Duration of the poll in seconds
-$POLL_INTERVAL = 1;  // Interval between checks in seconds
 
 
 // Set CORS headers
@@ -87,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     echo json_encode(['message' => 'Message saved successfully']);
 }
 
-// Handle GET requests Long Poll
+// Handle GET requests
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // Get the JWT token from the request header
     $jwtToken = getBearerToken();
@@ -102,36 +100,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     // Get the last_id from the user (assuming it's passed as a query parameter)
     $lastId = isset($_GET['last_id']) ? intval($_GET['last_id']) : 0;
 
-    $startTime = time();
+    // Prepare the query with placeholders
+    $query = $db->prepare('SELECT * FROM sms WHERE (from_user = :userId OR to_user = :userId OR to_user = "general") AND id > :lastId ORDER BY id DESC');
+
+    // Bind the parameters
+    $query->bindValue(':userId', $user['userId'], SQLITE3_TEXT);
+    $query->bindValue(':lastId', $lastId, SQLITE3_INTEGER);
+
+    // Execute the query
+    $result = $query->execute();
+
     $messages = [];
-
-    while (time() - $startTime < $POLL_DURATION) {
-        // Prepare the query with placeholders
-        $query = $db->prepare('SELECT * FROM sms WHERE (from_user = :userId OR to_user = :userId OR to_user = "general") AND id > :lastId ORDER BY id DESC');
-
-        // Bind the parameters
-        $query->bindValue(':userId', $user['userId'], SQLITE3_TEXT);
-        $query->bindValue(':lastId', $lastId, SQLITE3_INTEGER);
-
-        // Execute the query
-        $result = $query->execute();
-
-        while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
-            $messages[] = $row;
-        }
-
-        if (!empty($messages)) {
-            // Respond with the messages if any are found
-            http_response_code(200);
-            echo json_encode($messages);
-            return;
-        }
-
-        // Sleep for the interval before checking again
-        sleep($POLL_INTERVAL);
+    while ($row = $result->fetchArray(SQLITE3_ASSOC)) {
+        $messages[] = $row;
     }
 
-    // If no messages are found within the poll duration, respond with an empty array
+    // Respond with the messages (you can format this as needed)
     http_response_code(200);
     echo json_encode($messages);
 }

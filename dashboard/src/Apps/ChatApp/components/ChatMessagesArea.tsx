@@ -14,11 +14,10 @@ export default function ChatMessagesArea() {
         display: "flex",
         flexDirection: "column",
         padding: 1,
+        scrollBehavior: "smooth",
       }}
+      id="ChatMessagesArea"
     >
-      {/* AUTH LOGIC DONE!,
-      <br />
-      TODO: send/receive chat and long poll logic */}
       {chatHistory.map((c) => (
         <ChatBubble sms={c} key={c.id} />
       ))}
