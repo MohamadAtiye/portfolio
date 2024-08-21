@@ -42,9 +42,8 @@ export default function ImageHistory() {
         }}
       >
         {imgHistory.map((item, index) => (
-          <Box>
+          <Box key={`${index}-${item.op}`}>
             <figure
-              key={`${index}-${item.op}`}
               style={{ cursor: "pointer" }}
               onClick={() => setIsShowRestoreDialog(index)}
               title={`Restore Image ${item.op}`}
