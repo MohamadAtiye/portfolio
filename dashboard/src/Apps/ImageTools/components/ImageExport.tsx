@@ -10,7 +10,48 @@ import {
 import { useData } from "../helpers/useData";
 import { useEffect, useMemo, useState } from "react";
 import { formatFileSize } from "../helpers/utils";
-import CurrentImg from "./CurrentImg";
+
+const imageDataUrlToCanvas = (
+  imageDataUrl: string
+): Promise<HTMLCanvasElement> => {
+  return new Promise((resolve) => {
+    // Create an image element
+    const img = new Image();
+    img.src = imageDataUrl;
+
+    img.onload = () => {
+      // Create a canvas element
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d")!;
+
+      // Set canvas dimensions to match the image
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      // Draw the image onto the canvas
+      ctx.drawImage(img, 0, 0);
+
+      resolve(canvas);
+    };
+  });
+};
+const canvasToBlob = (
+  canvas: HTMLCanvasElement,
+  type: string,
+  quality: number
+): Promise<Blob> => {
+  return new Promise((resolve, reject) => {
+    // Convert the canvas to a Blob in JPEG format
+    canvas.toBlob(
+      (blob) => {
+        if (!blob) return reject();
+        resolve(blob);
+      },
+      type,
+      quality / 100
+    );
+  });
+};
 
 export default function ImageExport() {
   const { currentImage } = useData();
@@ -32,79 +73,43 @@ export default function ImageExport() {
 
   const [size, setSize] = useState(0);
 
+  const [displayImg, setDisplayImg] = useState<string>();
+
   // calculate export size
   useEffect(() => {
     const imageDataUrl = currentImage?.imageDataUrl;
     if (!imageDataUrl) return;
 
-    // Create an image element
-    const img = new Image();
-    img.src = imageDataUrl;
-
-    img.onload = () => {
-      // Create a canvas element
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d")!;
-
-      // Set canvas dimensions to match the image
-      canvas.width = img.width;
-      canvas.height = img.height;
-
-      // Draw the image onto the canvas
-      ctx.drawImage(img, 0, 0);
-
-      // Convert the canvas to a Blob in JPEG format
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) return;
-          setSize(blob.size);
-        },
-        type,
-        quality / 100
-      );
-    };
+    imageDataUrlToCanvas(imageDataUrl)
+      .then((canvas) => {
+        setDisplayImg(canvas.toDataURL(type, quality));
+        return canvasToBlob(canvas, type, quality);
+      })
+      .then((blob) => {
+        setSize(blob.size);
+      });
   }, [currentImage?.imageDataUrl, quality, type]);
 
   function downloadImage(fileName: string) {
     const imageDataUrl = currentImage?.imageDataUrl;
     if (!imageDataUrl) return;
 
-    // Create an image element
-    const img = new Image();
-    img.src = imageDataUrl;
+    imageDataUrlToCanvas(imageDataUrl)
+      .then((canvas) => {
+        return canvasToBlob(canvas, type, quality);
+      })
+      .then((blob) => {
+        // Create a link element
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = fileName;
 
-    img.onload = () => {
-      // Create a canvas element
-      const canvas = document.createElement("canvas");
-      const ctx = canvas.getContext("2d")!;
+        // Programmatically click the link to trigger the download
+        link.click();
 
-      // Set canvas dimensions to match the image
-      canvas.width = img.width;
-      canvas.height = img.height;
-
-      // Draw the image onto the canvas
-      ctx.drawImage(img, 0, 0);
-
-      // Convert the canvas to a Blob in JPEG format
-      canvas.toBlob(
-        (blob) => {
-          if (!blob) return;
-
-          // Create a link element
-          const link = document.createElement("a");
-          link.href = URL.createObjectURL(blob);
-          link.download = fileName;
-
-          // Programmatically click the link to trigger the download
-          link.click();
-
-          // Clean up
-          URL.revokeObjectURL(link.href);
-        },
-        type,
-        quality / 100
-      );
-    };
+        // Clean up
+        URL.revokeObjectURL(link.href);
+      });
   }
 
   return (
@@ -115,7 +120,6 @@ export default function ImageExport() {
           gap: 2,
           flexWrap: "wrap",
           padding: 2,
-          height: "120px",
         }}
       >
         <Box sx={{ display: "flex", flexDirection: "column" }}>
@@ -190,6 +194,7 @@ export default function ImageExport() {
         </Box>
       </Box>
 
+      <Typography align="center">Export Preview</Typography>
       <Box
         sx={{
           flex: 1,
@@ -198,7 +203,19 @@ export default function ImageExport() {
           overflow: "hidden",
         }}
       >
-        <CurrentImg />
+        <img
+          src={displayImg}
+          style={{
+            objectFit: "contain",
+            minWidth: "350px",
+            position: "absolute",
+            top: 0,
+            left: 0,
+
+            height: `100%`,
+            width: `100%`,
+          }}
+        />
       </Box>
     </>
   );
