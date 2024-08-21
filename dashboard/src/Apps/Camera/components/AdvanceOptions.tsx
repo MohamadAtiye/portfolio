@@ -52,6 +52,7 @@ export default function AdvanceOptions({
   capabilities,
   setAdvancedOptions,
 }: AdvanceOptionsProps) {
+  const [isShowAdvanced, setIsShowAdvanced] = useState(false);
   const [updated, setUpdated] = useState(settings);
   useEffect(() => {
     const newSettings = { ...settings };
@@ -75,93 +76,104 @@ export default function AdvanceOptions({
   }, [capabilities]);
 
   return (
-    <Box>
-      <table style={{ margin: "0 auto" }}>
-        <tbody>
-          {Object.entries(caps).map((item) => {
-            const controlValue = item[1];
-            const key = item[0];
-            const currentValue = updated[
-              key as keyof MediaTrackCapabilities
-            ] as string;
+    <>
+      <Button onClick={() => setIsShowAdvanced((p) => !p)}>
+        {isShowAdvanced ? "Hide" : "Show"} advanced settings
+      </Button>
+      {isShowAdvanced && (
+        <Box>
+          <table style={{ margin: "0 auto" }}>
+            <tbody>
+              {Object.entries(caps).map((item) => {
+                const controlValue = item[1];
+                const key = item[0];
+                const currentValue = updated[
+                  key as keyof MediaTrackCapabilities
+                ] as string;
 
-            // Check if it's an object with min, max, and step properties
-            if (
-              typeof controlValue === "object" &&
-              "min" in controlValue &&
-              "max" in controlValue
-              // && "step" in controlValue
-            ) {
-              // Render a range bar (slider)
-              return (
-                <tr key={key}>
-                  <td>{key}</td>
-                  <td>
-                    <SettingsInputRange
-                      min={controlValue.min}
-                      max={controlValue.max}
-                      step={controlValue.step ?? 1}
-                      // Add onChange handler as needed
-                      value={parseInt(currentValue)}
-                      handleChange={(v: number) =>
-                        setUpdated((p) => ({ ...p, [key]: v }))
-                      }
-                    />
-                  </td>
-                </tr>
-              );
-            } else if (Array.isArray(controlValue)) {
-              // Render radio buttons for an array of strings
-              return (
-                <tr key={key}>
-                  <td>{key}</td>
-                  <td>
-                    <FormControl component="fieldset">
-                      <RadioGroup
-                        row
-                        aria-label="radio-group"
-                        name="radio-group"
-                        value={currentValue}
-                        onChange={(event) => {
-                          setUpdated((p) => ({
-                            ...p,
-                            [key]: event.target.value,
-                          }));
-                        }}
-                      >
-                        {controlValue.map((option) => (
-                          <FormControlLabel
-                            key={option}
-                            value={option}
-                            control={<Radio />}
-                            label={option}
-                          />
-                        ))}
-                      </RadioGroup>
-                    </FormControl>
-                  </td>
-                </tr>
-              );
-            } else {
-              // Fallback: Just display the value as a string
-              return (
-                <tr key={key}>
-                  <td>{key}</td>
-                  <td>
-                    {JSON.stringify(controlValue)}, {currentValue}
-                  </td>
-                </tr>
-              );
-            }
-          })}
-        </tbody>
-      </table>
-      <Box
-        sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}
-      >
-        <Button onClick={() => setUpdated(settings)}>Reset</Button>
-        <Button onClick={() => setAdvancedOptions(updated)}>Apply</Button>
-      </Box>
-    </Box>
+                // Check if it's an object with min, max, and step properties
+                if (
+                  typeof controlValue === "object" &&
+                  "min" in controlValue &&
+                  "max" in controlValue
+                  // && "step" in controlValue
+                ) {
+                  // Render a range bar (slider)
+                  return (
+                    <tr key={key}>
+                      <td>{key}</td>
+                      <td>
+                        <SettingsInputRange
+                          min={controlValue.min}
+                          max={controlValue.max}
+                          step={controlValue.step ?? 1}
+                          // Add onChange handler as needed
+                          value={parseInt(currentValue)}
+                          handleChange={(v: number) =>
+                            setUpdated((p) => ({ ...p, [key]: v }))
+                          }
+                        />
+                      </td>
+                    </tr>
+                  );
+                } else if (Array.isArray(controlValue)) {
+                  // Render radio buttons for an array of strings
+                  return (
+                    <tr key={key}>
+                      <td>{key}</td>
+                      <td>
+                        <FormControl component="fieldset">
+                          <RadioGroup
+                            row
+                            aria-label="radio-group"
+                            name="radio-group"
+                            value={currentValue}
+                            onChange={(event) => {
+                              setUpdated((p) => ({
+                                ...p,
+                                [key]: event.target.value,
+                              }));
+                            }}
+                          >
+                            {controlValue.map((option) => (
+                              <FormControlLabel
+                                key={option}
+                                value={option}
+                                control={<Radio />}
+                                label={option}
+                              />
+                            ))}
+                          </RadioGroup>
+                        </FormControl>
+                      </td>
+                    </tr>
+                  );
+                } else {
+                  // Fallback: Just display the value as a string
+                  return (
+                    <tr key={key}>
+                      <td>{key}</td>
+                      <td>
+                        {JSON.stringify(controlValue)}, {currentValue}
+                      </td>
+                    </tr>
+                  );
+                }
+              })}
+            </tbody>
+          </table>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Button onClick={() => setUpdated(settings)}>Reset</Button>
+            <Button onClick={() => setAdvancedOptions(updated)}>Apply</Button>
+          </Box>
+        </Box>
+      )}
+    </>
   );
 }

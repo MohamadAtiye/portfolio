@@ -2,224 +2,19 @@ import {
   Box,
   Select,
   MenuItem,
-  Button,
   FormControlLabel,
   Checkbox,
 } from "@mui/material";
 import { useCallback, useEffect, useRef, useState } from "react";
 import AdvanceOptions from "./components/AdvanceOptions";
-
-const resolutions = [
-  { label: "800x480 (VGA)", value: "800x480" },
-  { label: "1280x720 (HD)", value: "1280x720" },
-  { label: "1920x1080 (Full HD)", value: "1920x1080" },
-  { label: "2560x1440 (QHD)", value: "2560x1440" },
-  { label: "3840x2160 (4K)", value: "3840x2160" },
-];
-
-async function checkAndQueryCameraPermission(): Promise<
-  "denied" | "granted" | "prompt" | "error"
-> {
-  try {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      return "error";
-    }
-
-    // query camera permission, return if granted or denied
-    const permission = await navigator.permissions.query({
-      name: "camera" as PermissionName,
-    });
-    if (permission.state === "granted" || permission.state === "denied")
-      return permission.state;
-
-    // continue if prompt and request video
-
-    const requestedStream = await navigator.mediaDevices.getUserMedia({
-      video: true,
-    });
-    if (requestedStream) {
-      requestedStream.getTracks().forEach((track) => track.stop());
-      return "granted";
-    } else {
-      return "denied";
-    }
-  } catch (error) {
-    console.error("Error checking or requesting camera permission:", error);
-    return "error";
-  }
-}
-
-async function listVideoDevices(): Promise<MediaDeviceInfo[]> {
-  try {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
-      console.error("enumerateDevices is not supported in this browser.");
-      return [];
-    }
-
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    const videoDevices = devices.filter(
-      (device) => device.kind === "videoinput"
-    );
-    return videoDevices;
-  } catch (error) {
-    console.error("Error listing video devices:", error);
-    return [];
-  }
-}
-
-async function requestVideoStream(constraints: MediaTrackConstraints) {
-  console.log("requestVideoStream", constraints);
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: constraints,
-      audio: false,
-    });
-    return stream;
-  } catch (error) {
-    console.error("error starting stream", constraints, error);
-    return null;
-  }
-}
-
-async function updateStream(
-  stream: MediaStream,
-  constraints: MediaTrackConstraints
-) {
-  console.log("updateStream", constraints);
-
-  try {
-    await stream.getVideoTracks()[0].applyConstraints(constraints);
-  } catch (error) {
-    console.error("error updating stream", constraints, error);
-  }
-}
-
-function applySobelFilter(
-  pixels: Uint8ClampedArray,
-  width: number,
-  height: number
-) {
-  // Create temporary arrays to store gradient values
-  const gradientX = new Float32Array(width * height);
-  const gradientY = new Float32Array(width * height);
-
-  // Sobel kernels for X and Y directions
-  const sobelX = [-1, 0, 1, -2, 0, 2, -1, 0, 1];
-  const sobelY = [-1, -2, -1, 0, 0, 0, 1, 2, 1];
-
-  // Compute gradients
-  for (let y = 1; y < height - 1; y++) {
-    for (let x = 1; x < width - 1; x++) {
-      let sumX = 0;
-      let sumY = 0;
-
-      // Convolve with Sobel kernels
-      for (let ky = 0; ky < 3; ky++) {
-        for (let kx = 0; kx < 3; kx++) {
-          const pixelOffset = (y + ky - 1) * width + (x + kx - 1);
-          const pixelValue = pixels[pixelOffset * 4]; // Assuming grayscale image
-
-          sumX += sobelX[ky * 3 + kx] * pixelValue;
-          sumY += sobelY[ky * 3 + kx] * pixelValue;
-        }
-      }
-
-      // Store gradient magnitudes
-      // const gradientMagnitude = Math.sqrt(sumX * sumX + sumY * sumY);
-      gradientX[y * width + x] = sumX;
-      gradientY[y * width + x] = sumY;
-    }
-  }
-
-  // Combine gradients (e.g., using gradient magnitude)
-  const edgePixels = new Uint8ClampedArray(width * height * 4);
-  for (let i = 0; i < pixels.length; i += 4) {
-    const magnitude = Math.sqrt(gradientX[i / 4] ** 2 + gradientY[i / 4] ** 2);
-    const edgeValue = Math.min(255, magnitude); // Clamp to [0, 255]
-
-    edgePixels[i] = edgeValue; // Red channel
-    edgePixels[i + 1] = edgeValue; // Green channel
-    edgePixels[i + 2] = edgeValue; // Blue channel
-    edgePixels[i + 3] = 255; // Alpha channel (fully opaque)
-  }
-
-  return edgePixels;
-}
-
-// Create an offscreen canvas
-const edgeCanvas = new OffscreenCanvas(100, 100);
-const edgeCtx = edgeCanvas.getContext("2d")!;
-function detectEdgesAndDraw(videoFrame: VideoFrame) {
-  edgeCanvas.width = videoFrame.displayWidth;
-  edgeCanvas.height = videoFrame.displayHeight;
-
-  // Draw the video frame onto the canvas
-  edgeCtx.drawImage(videoFrame, 0, 0);
-
-  // Get the image data (pixel values)
-  const imageData = edgeCtx.getImageData(
-    0,
-    0,
-    edgeCanvas.width,
-    edgeCanvas.height
-  );
-  const pixels = imageData.data;
-
-  // Apply Sobel filter
-  const edgePixels = applySobelFilter(
-    pixels,
-    edgeCanvas.width,
-    edgeCanvas.height
-  );
-
-  // Replace the original pixel data with the edge-detected pixels
-  for (let i = 0; i < pixels.length; i += 4) {
-    pixels[i] = edgePixels[i];
-    pixels[i + 1] = edgePixels[i + 1];
-    pixels[i + 2] = edgePixels[i + 2];
-    // You can adjust the alpha channel (pixels[i + 3]) if needed
-  }
-
-  // Put the modified image data back onto the canvas
-  edgeCtx.putImageData(imageData, 0, 0);
-
-  return edgeCanvas;
-}
-
-function applyEffects(
-  os_canvas: OffscreenCanvas,
-  os_context: OffscreenCanvasRenderingContext2D,
-  videoFrame: VideoFrame,
-  isFlip = false,
-  isEdge = false,
-  isBlur = false
-) {
-  const w = videoFrame.displayWidth;
-  const h = videoFrame.displayHeight;
-
-  // Set canvas dimensions
-  os_canvas.width = w;
-  os_canvas.height = h;
-
-  // Clear the canvas
-  os_context.clearRect(0, 0, w, h);
-
-  // Draw the video frame on os_canvas
-  os_context.drawImage(videoFrame, 0, 0, w, h);
-
-  // Apply effects based on flags
-  if (isFlip) os_context.scale(-1, 1);
-  if (isBlur) os_context.filter = "blur(5px)";
-
-  // draw the frame
-  const drawSrc = isEdge ? detectEdgesAndDraw(videoFrame) : videoFrame;
-  if (isFlip) os_context.drawImage(drawSrc, -w, 0, w, h);
-  else os_context.drawImage(drawSrc, 0, 0, w, h);
-
-  // restore
-  if (isFlip) os_context.setTransform(1, 0, 0, 1, 0, 0); // Reset transformation
-  if (isBlur) os_context.filter = "none"; // Reset filter
-}
+import CaptureButtonBox from "./components/CaptureButtonBox";
+import {
+  applyEffects,
+  requestVideoStream,
+  resolutions,
+  updateStream,
+} from "./helpers/WebRtc";
+import DeviceSelect from "./components/DeviceSelect";
 
 export default function Camera() {
   // source video stream
@@ -251,7 +46,6 @@ export default function Camera() {
   }, []);
 
   // stream options
-  const [deviceList, setDeviceList] = useState<MediaDeviceInfo[]>([]);
   const [streamArgs, setStreamArgs] = useState({
     resolution: "800x480",
     deviceId: "",
@@ -260,62 +54,11 @@ export default function Camera() {
       [x: string]: number | string;
     }[],
   });
-  const streamArgsRef = useRef({
-    resolution: "800x480",
-    deviceId: "",
-    permission: "prompt",
-    advanced: [] as {
-      [x: string]: number | string;
-    }[],
-  });
+
   const [videoStats, setVideoStats] = useState({
     settings: {} as MediaTrackSettings,
     capabilities: {} as MediaTrackCapabilities,
   });
-  const [isShowAdvances, setIsShowAdvanced] = useState(false);
-
-  // handle device listing and selection
-  useEffect(() => {
-    function updateListAndSelection() {
-      // check permission
-      checkAndQueryCameraPermission().then((permission) => {
-        if (permission !== "granted") {
-          setStreamArgs((p) => ({
-            ...p,
-            permission,
-          }));
-          return;
-        }
-
-        // get devices
-        listVideoDevices().then((devices) => {
-          setDeviceList(devices);
-          // update selection if needed
-          if (
-            !streamArgsRef.current.deviceId ||
-            !devices.find((d) => d.deviceId === streamArgsRef.current.deviceId)
-          ) {
-            setStreamArgs((p) => ({
-              ...p,
-              deviceId: devices[0]?.deviceId ?? "",
-              permission,
-            }));
-          }
-        });
-      });
-    }
-    updateListAndSelection();
-    navigator.mediaDevices.addEventListener(
-      "devicechange",
-      updateListAndSelection
-    );
-    return () => {
-      navigator.mediaDevices.removeEventListener(
-        "devicechange",
-        updateListAndSelection
-      );
-    };
-  }, []);
 
   ///////////////////////////////////////////////////////////////////////////////////// -- for Video Effects START
   const [videoEffects, setVideoEffects] = useState({
@@ -432,9 +175,6 @@ export default function Camera() {
   // called when streamArgs change
   useEffect(() => {
     console.log("useEffect", streamArgs);
-    // update the ref
-    streamArgsRef.current = { ...streamArgs };
-
     async function handleArgsChange() {
       // return on no permission
       if (streamArgs.permission !== "granted") return;
@@ -668,23 +408,10 @@ export default function Camera() {
         }}
       >
         <Box sx={{ display: "flex", flexWrap: "wrap" }}>
-          <Select
-            value={streamArgs.deviceId}
-            onChange={(e) => {
-              setStreamArgs((p) => ({
-                ...p,
-                deviceId: e.target.value as string,
-              }));
-            }}
-            size="small"
-            sx={{ flex: 1, minWidth: "350px" }}
-          >
-            {deviceList.map((device) => (
-              <MenuItem key={device.deviceId} value={device.deviceId}>
-                {device.label || `Camera ${device.deviceId}`}
-              </MenuItem>
-            ))}
-          </Select>
+          <DeviceSelect
+            setStreamArgs={setStreamArgs}
+            deviceId={streamArgs.deviceId}
+          />
           <Select
             value={streamArgs.resolution}
             onChange={(e) => {
@@ -704,6 +431,7 @@ export default function Camera() {
           </Select>
         </Box>
 
+        {/* EFFECTS */}
         <Box>
           <FormControlLabel
             control={
@@ -749,32 +477,16 @@ export default function Camera() {
           />
         </Box>
 
-        <Button onClick={() => setIsShowAdvanced((p) => !p)}>
-          {isShowAdvances ? "Hide" : "Show"} advanced settings
-        </Button>
         {/* ADVANCED SETTINGS */}
-        {isShowAdvances && (
-          <AdvanceOptions
-            capabilities={videoStats.capabilities}
-            settings={videoStats.settings}
-            setAdvancedOptions={setAdvancedOptions}
-          />
-        )}
+        <AdvanceOptions
+          capabilities={videoStats.capabilities}
+          settings={videoStats.settings}
+          setAdvancedOptions={setAdvancedOptions}
+        />
       </Box>
 
       {/* CAPTURE BUTTON */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          gap: 2,
-          flexWrap: "wrap",
-        }}
-      >
-        <Button variant="contained" size="small" onClick={handleScreenshot}>
-          Capture
-        </Button>
-      </Box>
+      <CaptureButtonBox handleScreenshot={handleScreenshot} />
     </Box>
   );
 }
